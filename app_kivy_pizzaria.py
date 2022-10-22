@@ -11,6 +11,11 @@ class Login(Screen):
     pass
 
 
+class Cadastrar(Screen):
+    pass
+
+
+
 class app_kivy_pizzaria(App):
     def build(self):
         return Gerente_das_telas()

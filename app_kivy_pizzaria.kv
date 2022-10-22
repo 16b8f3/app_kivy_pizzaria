@@ -34,3 +34,38 @@
         Button:
             text: 'Cadastrar'
             #on_release: app.root.current = 'cadastrar'
+
+<Cadastrar>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 0
+        spacing: 0
+
+        Image:
+            source: "./imgs/pizzaLogo.png"
+            allow_stretch: False
+            size_hint_y: None
+            height: 150
+        GridLayout:
+            cols: 2
+            spacing: 0
+            Label:
+                #id:
+                text: "Usuario"
+            TextInput:
+                #id:
+                font_size: 30
+            Label:
+                #id:
+                text: "Email"
+            TextInput:
+                #id:
+                font_size: 30
+            Label:
+                #id:
+                text: "Senha"
+            TextInput:
+                #id:
+                font_size: 30
+        Button:
+            text: 'Cadastrar'
