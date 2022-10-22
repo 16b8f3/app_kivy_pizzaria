@@ -1,6 +1,14 @@
 <Gerente_das_telas>:
     Login:
         name: 'login'
+    Cadastrar:
+        name: 'cadastrar'
+    Menu:
+        name: 'menu'
+    Pedido:
+        name: 'pedido'
+    Finalizar_Pedido:
+        name: 'finalizar_pedido'
 
 <Login>:
     BoxLayout:
@@ -30,10 +38,10 @@
                 font_size: 30
         Button:
             text: 'Login'
-            #on_release: app.root.current = 'menu'
+            on_release: app.root.current = 'menu'
         Button:
             text: 'Cadastrar'
-            #on_release: app.root.current = 'cadastrar'
+            on_release: app.root.current = 'cadastrar'
 
 <Cadastrar>:
     BoxLayout:
@@ -83,10 +91,10 @@
             height: 150
         Button:
             text: 'Fazer Pedido'
-            #on_release: app.root.current = 'pedido'
+            on_release: app.root.current = 'pedido'
         Button:
             text: 'Sair'
-            #on_release: app.stop()
+            on_release: app.stop()
 
 <Pedido>:
     BoxLayout:
@@ -149,10 +157,10 @@
                 text: "0.00"
             Button:
                 text: 'Menu'
-                #on_release: app.root.current = 'menu'
+                on_release: app.root.current = 'menu'
             Button:
                 text: 'Finalizar pedido'
-                #on_release: app.root.current = 'finalizar_pedido'
+                on_release: app.root.current = 'finalizar_pedido'
 
 <Finalizar_Pedido>:
     BoxLayout:
@@ -184,11 +192,11 @@
                 font_size: 30
             Button:
                 text: 'Menu'
-                #on_release: app.root.current = 'menu'
+                on_release: app.root.current = 'menu'
             Button:
                 text: 'Pedido'
-                #on_release: app.root.current = 'pedido'
+                on_release: app.root.current = 'pedido'
 
         Button:
             text: 'Finalizar Pedido'
-            #on_release: app.root.current = ''
+            on_release: app.root.current = ''
