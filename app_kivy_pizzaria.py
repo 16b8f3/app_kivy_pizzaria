@@ -19,6 +19,10 @@ class Menu(Screen):
     pass
 
 
+class Pedido(Screen):
+    pass
+
+
 class app_kivy_pizzaria(App):
     def build(self):
         return Gerente_das_telas()
