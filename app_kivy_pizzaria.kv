@@ -153,3 +153,42 @@
             Button:
                 text: 'Finalizar pedido'
                 #on_release: app.root.current = 'finalizar_pedido'
+
+<Finalizar_Pedido>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 0
+        spacing: 0
+
+        GridLayout:
+            cols: 2
+            spacing:0
+
+            Label:
+                #id:
+                text: "Endereço: "
+            TextInput:
+                #id:
+                font_size: 30
+            Label:
+                #id:
+                text: "Telefone: "
+            TextInput:
+                #id:
+                font_size: 30
+            Label:
+                #id:
+                text: "Forma de pagamento: "
+            TextInput:
+                #id:
+                font_size: 30
+            Button:
+                text: 'Menu'
+                #on_release: app.root.current = 'menu'
+            Button:
+                text: 'Pedido'
+                #on_release: app.root.current = 'pedido'
+
+        Button:
+            text: 'Finalizar Pedido'
+            #on_release: app.root.current = ''
