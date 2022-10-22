@@ -15,6 +15,9 @@ class Cadastrar(Screen):
     pass
 
 
+class Menu(Screen):
+    pass
+
 
 class app_kivy_pizzaria(App):
     def build(self):

@@ -69,3 +69,21 @@
                 font_size: 30
         Button:
             text: 'Cadastrar'
+
+<Menu>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 0
+        spacing: 0
+
+        Image:
+            source: "./imgs/pizzaLogo.png"
+            allow_stretch: False
+            size_hint_y: None
+            height: 150
+        Button:
+            text: 'Fazer Pedido'
+            #on_release: app.root.current = 'pedido'
+        Button:
+            text: 'Sair'
+            #on_release: app.stop()
