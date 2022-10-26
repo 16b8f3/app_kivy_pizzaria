@@ -20,7 +20,16 @@ class Menu(Screen):
 
 
 class Pedido(Screen):
-    pass
+        
+    def mais(self):
+        print('aumenta o numero da pizza em 1')
+        self.ids.teste.text = str(int(self.ids.teste.text) + 1)
+
+    def menos(self):
+        if (int(self.ids.teste.text)) > 0:
+            print('diminui o numero da pizza em 1')
+            self.ids.teste.text = str(int(self.ids.teste.text) - 1)
+            
 
 
 class Finalizar_Pedido(Screen):

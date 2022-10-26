@@ -21,9 +21,11 @@
             allow_stretch: False
             size_hint_y: None
             height: 150
+
         GridLayout:
             cols: 2
             spacing: 0
+
             Label:
                 #id:
                 text: "Usuario"
@@ -36,6 +38,7 @@
             TextInput:
                 #id:
                 font_size: 30
+
         Button:
             text: 'Login'
             on_release: app.root.current = 'menu'
@@ -54,9 +57,11 @@
             allow_stretch: False
             size_hint_y: None
             height: 150
+
         GridLayout:
             cols: 2
             spacing: 0
+
             Label:
                 #id:
                 text: "Usuario"
@@ -75,6 +80,7 @@
             TextInput:
                 #id:
                 font_size: 30
+
         Button:
             text: 'Cadastrar'
 
@@ -89,6 +95,7 @@
             allow_stretch: False
             size_hint_y: None
             height: 150
+
         Button:
             text: 'Fazer Pedido'
             on_release: app.root.current = 'pedido'
@@ -103,20 +110,25 @@
         spacing: 0
 
         ScrollView:
+
             BoxLayout:
+
                 orientation:'vertical'
                 size_hint_y: None
                 height:self.minimum_height
+
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
                     height: 350
                     spacing: 25
+
                     Image:
                         source: "./imgs/pizzaLogo.png"
                         allow_stretch: False
                         size_hint_y: None
                         height: 150
+
                     Label:
                         #id:
                         text: "Nome pizza - tamanho"
@@ -124,8 +136,9 @@
                         #id:
                         text: "Ingredientes"
                     Label:
-                        #id:
+                        id: valor
                         text: "Preço R$ 47.99"
+
                     GridLayout:
                         cols: 2
                         spacing:0
@@ -134,16 +147,19 @@
                             #id:
                             text: "Quantidade:"
                         Label:
-                            #id:
+                            id: teste
                             text: "0"
+
                     GridLayout:
                         cols: 2
                         spacing: 0
 
                         Button:
                             text: '+'
+                            on_release: root.mais()
                         Button:
                             text: '-'
+                            on_release: root.menos()
 
         GridLayout:
             cols: 2
@@ -153,8 +169,9 @@
                 #id:
                 text: "Total R$"
             Label:
-                #id:
+                id: testeValor
                 text: "0.00"
+
             Button:
                 text: 'Menu'
                 on_release: app.root.current = 'menu'
@@ -190,6 +207,7 @@
             TextInput:
                 #id:
                 font_size: 30
+                
             Button:
                 text: 'Menu'
                 on_release: app.root.current = 'menu'
