@@ -64,7 +64,13 @@
 
             Label:
                 #id:
-                text: "Usuario"
+                text: "Nome"
+            TextInput:
+                #id:
+                font_size: 30
+            Label:
+                #id:
+                text: "Sobrenome"
             TextInput:
                 #id:
                 font_size: 30
@@ -83,6 +89,10 @@
 
         Button:
             text: 'Cadastrar'
+            on_release: app.root.current = 'login'
+        Button:
+            text: 'Voltar'
+            on_release: app.root.current = 'login'
 
 <Menu>:
     BoxLayout:
