@@ -44,38 +44,39 @@ def create_database(connection, query):
     except Error as err:
         print(f"Error: '{err}'")
 
-# Cria a tabela Pessoas
-def create_table_Pessoas(connection):
-    cursor = connection.cursor()
-    cursor.execute('USE pizzariaKivy')
-    cursor.execute('CREATE TABLE Pessoas'
-        '(id_Pessoa INT NOT NULL AUTO_INCREMENT, '
-        'nome_Pessoa VARCHAR(255) NOT NULL, '
-        'sobrenome_Pessoa VARCHAR(255) NOT NULL, '
-        'PRIMARY KEY (id_Pessoa))'
-        )
-
 # Cria a tabela Contas 
 def create_table_Contas(connection):
     cursor = connection.cursor()
     cursor.execute('USE pizzariaKivy')
     cursor.execute('CREATE TABLE Contas'
         '(id_Conta INT NOT NULL AUTO_INCREMENT PRIMARY KEY, '
+        'nome_Conta VARCHAR(255) NOT NULL, '
+        'sobrenome_Conta VARCHAR(255) NOT NULL, '
         'email_Conta VARCHAR(255) NOT NULL, '
         'senha_Conta VARCHAR(255) NOT NULL,'
         'status_Conta TINYINT(1) NOT NULL DEFAULT 0,'
-        'id_Pessoa_Conta INT NOT NULL, '
-        'CONSTRAINT fk_id_Pessoa_Conta FOREIGN KEY (`id_Pessoa_Conta`) REFERENCES Pessoas(`id_Pessoa`), '
+        # 'INDEX (email_Conta), '
         'CONSTRAINT unique_email_Conta UNIQUE (email_Conta))'
         )
 
+def insert_table_Contas(connection, nome, sobrenome, email, senha):
+    cursor = connection.cursor()
+    cursor.execute('USE pizzariaKivy')
+    cursor.execute('INSERT INTO Contas'
+        '(nome_Conta, sobrenome_Conta, email_Conta, senha_Conta) VALUES' 
+        '(%s, %s, %s, %s);', (nome, sobrenome, email, senha)
+    )
+
+    print("Inserted",cursor.rowcount,"row(s) of data.")
+    connection.commit()
+    cursor.close()
+    connection.close()
+    print("Done.")
 
 
-# Área de execução
-connection = create_server_connection('localhost', 'root', '')
-create_database_query = "CREATE DATABASE pizzariaKivy;"
-create_database(connection, create_database_query)
-version_database(connection)
-create_table_Pessoas(connection)
-create_table_Contas(connection)
-server_connection_destroy(connection)
+# connection = create_server_connection('localhost', 'root', '')
+# create_database_query = "CREATE DATABASE pizzariaKivy;"
+# create_database(connection, create_database_query)
+# version_database(connection)
+# create_table_Contas(connection)
+# server_connection_destroy(connection)
