@@ -66,22 +66,22 @@
                 #id:
                 text: "Nome"
             TextInput:
-                #id:
+                id: nome
                 font_size: 30
             Label:
                 #id:
                 text: "Sobrenome"
             TextInput:
-                #id:
+                id: sobrenome
                 font_size: 30
             Label:
                 #id:
                 text: "Email"
             TextInput:
-                #id:
+                id: email
                 font_size: 30
             Label:
-                #id:
+                id: senha
                 text: "Senha"
             TextInput:
                 #id:
@@ -89,7 +89,8 @@
 
         Button:
             text: 'Cadastrar'
-            on_release: app.root.current = 'login'
+            # on_release: app.root.current = 'login'
+            on_release: root.teste_integrarCadastro()
         Button:
             text: 'Voltar'
             on_release: app.root.current = 'login'

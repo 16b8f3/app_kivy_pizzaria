@@ -1,6 +1,7 @@
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen
 
+import bancoDeDados
 
 
 class Gerente_das_telas(ScreenManager):
@@ -12,7 +13,19 @@ class Login(Screen):
 
 
 class Cadastrar(Screen):
-    pass
+    def teste_integrarCadastro(self):
+        connection = bancoDeDados.create_server_connection('localhost', 'root', '')
+        nome = self.ids.nome.text
+        sobrenome = self.ids.sobrenome.text
+        email = self.ids.email.text
+        senha = self.ids.senha.text
+        bancoDeDados.insert_table_Contas(connection, nome, sobrenome, email, senha)
+        self.ids.nome.text = ''
+        self.ids.sobrenome.text = ''
+        self.ids.email.text = ''
+        self.ids.senha.text = ''
+
+    # pass
 
 
 class Menu(Screen):
@@ -30,13 +43,11 @@ class Pedido(Screen):
         # passar toda essa função para um arquivo a parte e importar aqui e usar so as funções
         
     def mais(self):
-        print('aumenta o numero da pizza em 1')
         self.ids.teste.text = str(int(self.ids.teste.text) + 1)
         self.pizzaTeste()
 
     def menos(self):
         if (int(self.ids.teste.text)) > 0:
-            print('diminui o numero da pizza em 1')
             self.ids.teste.text = str(int(self.ids.teste.text) - 1)
             self.pizzaTeste()
 
