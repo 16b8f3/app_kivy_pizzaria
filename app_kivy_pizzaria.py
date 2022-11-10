@@ -9,8 +9,11 @@ class Gerente_das_telas(ScreenManager):
 
 
 class Login(Screen):
-    pass
-
+    def teste_integrarLogin(self):
+        connection = bancoDeDados.create_server_connection('localhost', 'root', '')
+        email = self.ids.log.text
+        senha = self.ids.sen.text
+        bancoDeDados.procurar(connection, email, senha)
 
 class Cadastrar(Screen):
     def teste_integrarCadastro(self):

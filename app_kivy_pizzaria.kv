@@ -30,17 +30,18 @@
                 #id:
                 text: "Usuario"
             TextInput:
-                #id:
+                id: log
                 font_size: 30
             Label:
                 #id:
                 text: "Senha"
             TextInput:
-                #id:
+                id: sen
                 font_size: 30
 
         Button:
             text: 'Login'
+            on_release: root.teste_integrarLogin()
             on_release: app.root.current = 'menu'
         Button:
             text: 'Cadastrar'
@@ -81,10 +82,10 @@
                 id: email
                 font_size: 30
             Label:
-                id: senha
+                # id:
                 text: "Senha"
             TextInput:
-                #id:
+                #id: senha
                 font_size: 30
 
         Button:

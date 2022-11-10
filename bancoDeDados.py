@@ -73,6 +73,29 @@ def insert_table_Contas(connection, nome, sobrenome, email, senha):
     connection.close()
     print("Done.")
 
+def procurar(connection, email, senha):
+    cursor = connection.cursor()
+    cursor.execute('USE pizzariaKivy')
+    cursor.execute('SELECT senha_Conta FROM Contas WHERE email_Conta = "{}"'.format(email))
+    senha_bd = cursor.fetchall()
+    print(senha_bd[0][0])
+    print(senha)
+    # pass
+    if senha_bd[0][0] == senha:
+        print("senha igual")
+    try:
+        cursor = connection.cursor()
+        cursor.execute('USE pizzariaKivy')
+        cursor.execute('SELECT senha_Conta FROM Contas WHERE email_Conta = "{}"'.format(email))
+        senha_bd = cursor.fetchall()
+    except:
+        print("Erro ao validar o login")
+     
+        
+    if senha_bd[0][0] == senha:
+        print("Login realizado com sucesso!!!")
+    else:
+        print("Falha ao fazer o Login")
 
 # connection = create_server_connection('localhost', 'root', '')
 # create_database_query = "CREATE DATABASE pizzariaKivy;"
@@ -80,3 +103,4 @@ def insert_table_Contas(connection, nome, sobrenome, email, senha):
 # version_database(connection)
 # create_table_Contas(connection)
 # server_connection_destroy(connection)
+
