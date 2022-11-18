@@ -27,21 +27,24 @@
             spacing: 0
 
             Label:
-                #id:
-                text: "Usuario"
+                # id:
+                text: "E-mail"
             TextInput:
                 id: log
                 font_size: 30
+                multiline:False # Apenas uma linha é permitida
+                write_tab: False # Não pode apertar tap e dar varios espaços, não mais
             Label:
-                #id:
+                # id:
                 text: "Senha"
             TextInput:
                 id: sen
                 font_size: 30
+                password: True
 
         Button:
             text: 'Login'
-            on_release: root.teste_integrarLogin()
+            # on_release: root.teste_integrarLogin()
             on_release: app.root.current = 'menu'
         Button:
             text: 'Cadastrar'
@@ -64,19 +67,19 @@
             spacing: 0
 
             Label:
-                #id:
+                # id:
                 text: "Nome"
             TextInput:
                 id: nome
                 font_size: 30
             Label:
-                #id:
+                # id:
                 text: "Sobrenome"
             TextInput:
                 id: sobrenome
                 font_size: 30
             Label:
-                #id:
+                # id:
                 text: "Email"
             TextInput:
                 id: email
@@ -85,13 +88,13 @@
                 # id:
                 text: "Senha"
             TextInput:
-                #id: senha
+                # id: senha
                 font_size: 30
 
         Button:
             text: 'Cadastrar'
-            # on_release: app.root.current = 'login'
-            on_release: root.teste_integrarCadastro()
+            on_release: app.root.current = 'login'
+            # on_release: root.teste_integrarCadastro()
         Button:
             text: 'Voltar'
             on_release: app.root.current = 'login'
@@ -122,44 +125,59 @@
         spacing: 0
 
         ScrollView:
-
             BoxLayout:
-
                 orientation:'vertical'
                 size_hint_y: None
-                height:self.minimum_height
+                height: self.minimum_height
+                padding: 0
+                spacing: 0
+
+                # Titulo da Categoria dessas Pizzas
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
+
+                    Label:
+                        # id:
+                        text: "PIZZAS TRADICIONAIS"
 
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 350
-                    spacing: 25
-
-                    Image:
-                        source: "./imgs/pizzaLogo.png"
-                        allow_stretch: False
-                        size_hint_y: None
-                        height: 150
+                    height: 150
+                    padding: 0
+                    spacing: 0
 
                     Label:
-                        #id:
-                        text: "Nome pizza - tamanho"
+                        # id:
+                        text: "Ads"
                     Label:
-                        #id:
-                        text: "Ingredientes"
-                    Label:
-                        id: valor
-                        text: "Preço R$ 47.99"
+                        # id:
+                        text: "Muçarela, Presunto, Calabresa, Rodelas de Tomate, Cebola, Pimentão, Milho e Azeitonas."
 
                     GridLayout:
                         cols: 2
                         spacing:0
 
                         Label:
-                            #id:
+                            # id:
+                            text: "Preço R$"
+                        Label:
+                            id: valor_Ads
+                            text: "1.50"
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
                             text: "Quantidade:"
                         Label:
-                            id: teste
+                            id: quantidade_Ads
                             text: "0"
 
                     GridLayout:
@@ -168,28 +186,917 @@
 
                         Button:
                             text: '+'
-                            on_release: root.mais()
+                            on_release: root.incrementar_Ads()
                         Button:
                             text: '-'
-                            on_release: root.menos()
+                            on_release: root.decrementar_Ads()
 
-        GridLayout:
-            cols: 2
-            spacing:0
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
 
-            Label:
-                #id:
-                text: "Total R$"
-            Label:
-                id: testeValor
-                text: "0.00"
+                    Label:
+                        # id:
+                        text: "Baiana"
+                    Label:
+                        # id:
+                        text: "Muçarela, Calabresa e Pimenta Calabresa."
 
-            Button:
-                text: 'Menu'
-                on_release: app.root.current = 'menu'
-            Button:
-                text: 'Finalizar pedido'
-                on_release: app.root.current = 'finalizar_pedido'
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Preço R$"
+                        Label:
+                            id: valor_Baiana
+                            text: "10.00"
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Quantidade:"
+                        Label:
+                            id: quantidade_Baiana
+                            text: "0"
+
+                    GridLayout:
+                        cols: 2
+                        spacing: 0
+
+                        Button:
+                            text: '+'
+                            on_release: root.incrementar_Baiana()
+                        Button:
+                            text: '-'
+                            on_release: root.decrementar_Baiana()
+
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
+
+                    Label:
+                        # id:
+                        text: "Bolonhesa"
+                    Label:
+                        # id:
+                        text: "Muçarela e molho à bolonhesa."
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Preço R$"
+                        Label:
+                            id: valor_Bolonhesa
+                            text: "10.00"
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Quantidade:"
+                        Label:
+                            id: quantidade_Bolonhesa
+                            text: "0"
+
+                    GridLayout:
+                        cols: 2
+                        spacing: 0
+
+                        Button:
+                            text: '+'
+                            on_release: root.incrementar_Bolonhesa()
+                        Button:
+                            text: '-'
+                            on_release: root.decrementar_Bolonhesa()
+
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
+
+                    Label:
+                        # id:
+                        text: "Calabresa"
+                    Label:
+                        # id:
+                        text: "Muçarela, Calabresa e Azeitonas."
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Preço R$"
+                        Label:
+                            id: valor_Calabresa
+                            text: "10.00"
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Quantidade:"
+                        Label:
+                            id: quantidade_Calabresa
+                            text: "0"
+
+                    GridLayout:
+                        cols: 2
+                        spacing: 0
+
+                        Button:
+                            text: '+'
+                            on_release: root.incrementar_Calabresa()
+                        Button:
+                            text: '-'
+                            on_release: root.decrementar_Calabresa()
+
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
+
+                    Label:
+                        # id:
+                        text: "Frango com Catupiry"
+                    Label:
+                        # id:
+                        text: "Muçarela, Frango Desfiado, Milho Verde, Azeitonas, Rodelas de Tomate e Catupiry."
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Preço R$"
+                        Label:
+                            id: valor_FrangoComCatupiry
+                            text: "10.00"
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Quantidade:"
+                        Label:
+                            id: quantidade_FrangoComCatupiry
+                            text: "0"
+
+                    GridLayout:
+                        cols: 2
+                        spacing: 0
+
+                        Button:
+                            text: '+'
+                            on_release: root.incrementar_FrangoComCatupiry()
+                        Button:
+                            text: '-'
+                            on_release: root.decrementar_FrangoComCatupiry()
+
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
+
+                    Label:
+                        # id:
+                        text: "Ituiutaba"
+                    Label:
+                        # id:
+                        text: "Muçarela, Presunto, Frango Desfiado, Calabresa, Azeitonas, Pimentão, Cebola, Bacon, Rodelas de Tomate e Milho Verde."
+
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Preço R$"
+                        Label:
+                            id: valor_Ituiutaba
+                            text: "10.00"
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Quantidade:"
+                        Label:
+                            id: quantidade_Ituiutaba
+                            text: "0"
+
+                    GridLayout:
+                        cols: 2
+                        spacing: 0
+
+                        Button:
+                            text: '+'
+                            on_release: root.incrementar_Ituiutaba()
+                        Button:
+                            text: '-'
+                            on_release: root.decrementar_Ituiutaba()
+
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
+
+                    Label:
+                        # id:
+                        text: "Muçarela"
+                    Label:
+                        # id:
+                        text: "Muçarela, Rodelas de Tomate, Azeitonas e Orégano."
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Preço R$"
+                        Label:
+                            id: valor_Mucarela
+                            text: "10.00"
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Quantidade:"
+                        Label:
+                            id: quantidade_Mucarela
+                            text: "0"
+
+                    GridLayout:
+                        cols: 2
+                        spacing: 0
+
+                        Button:
+                            text: '+'
+                            on_release: root.incrementar_Mucarela()
+                        Button:
+                            text: '-'
+                            on_release: root.decrementar_Mucarela()
+
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
+
+                    Label:
+                        # id:
+                        text: "Quatro Queijos"
+                    Label:
+                        # id:
+                        text: "Muçarela, Provolone, Parmesão e Catupiry."
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Preço R$"
+                        Label:
+                            id: valor_QuatroQueijos
+                            text: "10.00"
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Quantidade:"
+                        Label:
+                            id: quantidade_QuatroQueijos
+                            text: "0"
+
+                    GridLayout:
+                        cols: 2
+                        spacing: 0
+
+                        Button:
+                            text: '+'
+                            on_release: root.incrementar_QuatroQueijos()
+                        Button:
+                            text: '-'
+                            on_release: root.decrementar_QuatroQueijos()
+
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
+
+                    Label:
+                        # id:
+                        text: "Três Queijos"
+                    Label:
+                        # id:
+                        text: "Muçarela, Provolone e Catupiry."
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Preço R$"
+                        Label:
+                            id: valor_TresQueijos
+                            text: "10.00"
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Quantidade:"
+                        Label:
+                            id: quantidade_TresQueijos
+                            text: "0"
+
+                    GridLayout:
+                        cols: 2
+                        spacing: 0
+
+                        Button:
+                            text: '+'
+                            on_release: root.incrementar_TresQueijos()
+                        Button:
+                            text: '-'
+                            on_release: root.decrementar_TresQueijos()
+
+                # Titulo da Categoria dessas Pizzas
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
+
+                    Label:
+                        # id:
+                        text: "PIZZAS ESPECIAIS"
+
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
+
+                    Label:
+                        # id:
+                        text: "Brócolis"
+                    Label:
+                        # id:
+                        text: "*Muçarela, Brócolis, Bacon, Alho Frito, Azeitonas e Orégano."
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Preço R$"
+                        Label:
+                            id: valor_Brocolis
+                            text: "10.00"
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Quantidade:"
+                        Label:
+                            id: quantidade_Brocolis
+                            text: "0"
+
+                    GridLayout:
+                        cols: 2
+                        spacing: 0
+
+                        Button:
+                            text: '+'
+                            on_release: root.incrementar_Brocolis()
+                        Button:
+                            text: '-'
+                            on_release: root.decrementar_Brocolis()
+
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
+
+                    Label:
+                        # id:
+                        text: "Champignon"
+                    Label:
+                        # id:
+                        text: "Muçarela, Provolone, Champignon e Rodelas de Tomate."
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Preço R$"
+                        Label:
+                            id: valor_Champignon
+                            text: "10.00"
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Quantidade:"
+                        Label:
+                            id: quantidade_Champignon
+                            text: "0"
+
+                    GridLayout:
+                        cols: 2
+                        spacing: 0
+
+                        Button:
+                            text: '+'
+                            on_release: root.incrementar_Champignon()
+                        Button:
+                            text: '-'
+                            on_release: root.decrementar_Champignon()
+
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
+
+                    Label:
+                        # id:
+                        text: "Cinco Queijos"
+                    Label:
+                        # id:
+                        text: "Muçarela, Catupiry, provolone, Gorgonzola, Parmesão e Azeitonas pretas."
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Preço R$"
+                        Label:
+                            id: valor_CincoQueijos
+                            text: "10.00"
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Quantidade:"
+                        Label:
+                            id: quantidade_CincoQueijos
+                            text: "0"
+
+                    GridLayout:
+                        cols: 2
+                        spacing: 0
+
+                        Button:
+                            text: '+'
+                            on_release: root.incrementar_CincoQueijos()
+                        Button:
+                            text: '-'
+                            on_release: root.decrementar_CincoQueijos()
+
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
+
+                    Label:
+                        # id:
+                        text: "Salaminho"
+                    Label:
+                        # id:
+                        text: "Muçarela, Salaminho, Rodelas de Tomate e Azeitonas."
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Preço R$"
+                        Label:
+                            id: valor_Salaminho
+                            text: "10.00"
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Quantidade:"
+                        Label:
+                            id: quantidade_Salaminho
+                            text: "0"
+
+                    GridLayout:
+                        cols: 2
+                        spacing: 0
+
+                        Button:
+                            text: '+'
+                            on_release: root.incrementar_Salaminho()
+                        Button:
+                            text: '-'
+                            on_release: root.decrementar_Salaminho()
+
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
+
+                    Label:
+                        # id:
+                        text: "Vegetariana"
+                    Label:
+                        # id:
+                        text: "Muçarela, Rodelas de Tomate, Palmito, Cebola, Pimentão, Azeitonas, Milho Verde e Ervilhas."
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Preço R$"
+                        Label:
+                            id: valor_Vegetariana
+                            text: "10.00"
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Quantidade:"
+                        Label:
+                            id: quantidade_Vegetariana
+                            text: "0"
+
+                    GridLayout:
+                        cols: 2
+                        spacing: 0
+
+                        Button:
+                            text: '+'
+                            on_release: root.incrementar_Vegetariana()
+                        Button:
+                            text: '-'
+                            on_release: root.decrementar_Vegetariana()
+
+                # Titulo da Categoria dessas Pizzas
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
+
+                    Label:
+                        # id:
+                        text: "PIZZAS DOCES"
+
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
+
+                    Label:
+                        # id:
+                        text: "Açaí"
+                    Label:
+                        # id:
+                        text: "Açaí, confete, Leite Ninho, Granola, Nutella e Leite Condensado."
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Preço R$"
+                        Label:
+                            id: valor_Acai
+                            text: "10.00"
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Quantidade:"
+                        Label:
+                            id: quantidade_Acai
+                            text: "0"
+
+                    GridLayout:
+                        cols: 2
+                        spacing: 0
+
+                        Button:
+                            text: '+'
+                            on_release: root.incrementar_Acai()
+                        Button:
+                            text: '-'
+                            on_release: root.decrementar_Acai()
+
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
+
+                    Label:
+                        # id:
+                        text: "Banana"
+                    Label:
+                        # id:
+                        text: "Muçarela, Banana, Açúcar, Canela e Leite condensado."
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Preço R$"
+                        Label:
+                            id: valor_Banana
+                            text: "10.00"
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Quantidade:"
+                        Label:
+                            id: quantidade_Banana
+                            text: "0"
+
+                    GridLayout:
+                        cols: 2
+                        spacing: 0
+
+                        Button:
+                            text: '+'
+                            on_release: root.incrementar_Banana()
+                        Button:
+                            text: '-'
+                            on_release: root.decrementar_Banana()
+
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
+
+                    Label:
+                        # id:
+                        text: "Brigadeiro"
+                    Label:
+                        # id:
+                        text: "Muçarela, chocolate ao leite, Granulado e Leite condensado."
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Preço R$"
+                        Label:
+                            id: valor_Brigadeiro
+                            text: "10.00"
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Quantidade:"
+                        Label:
+                            id: quantidade_Brigadeiro
+                            text: "0"
+
+                    GridLayout:
+                        cols: 2
+                        spacing: 0
+
+                        Button:
+                            text: '+'
+                            on_release: root.incrementar_Brigadeiro()
+                        Button:
+                            text: '-'
+                            on_release: root.decrementar_Brigadeiro()
+
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
+
+                    Label:
+                        # id:
+                        text: "Prestígio"
+                    Label:
+                        # id:
+                        text: "Chocolate ao leite, Coco ralado."
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Preço R$"
+                        Label:
+                            id: valor_Prestigio
+                            text: "10.00"
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Quantidade:"
+                        Label:
+                            id: quantidade_Prestigio
+                            text: "0"
+
+                    GridLayout:
+                        cols: 2
+                        spacing: 0
+
+                        Button:
+                            text: '+'
+                            on_release: root.incrementar_Prestigio()
+                        Button:
+                            text: '-'
+                            on_release: root.decrementar_Prestigio()
+
+                BoxLayout:
+                    orientation:'vertical'
+                    size_hint_y: None
+                    height: 150
+                    padding: 0
+                    spacing: 0
+
+                    Label:
+                        # id:
+                        text: "Romeu e Julieta"
+                    Label:
+                        # id:
+                        text: "Muçarela, Goiabada e Queijo."
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Preço R$"
+                        Label:
+                            id: valor_RomeuAndJulieta
+                            text: "10.00"
+
+                    GridLayout:
+                        cols: 2
+                        spacing:0
+
+                        Label:
+                            # id:
+                            text: "Quantidade:"
+                        Label:
+                            id: quantidade_RomeuAndJulieta
+                            text: "0"
+
+                    GridLayout:
+                        cols: 2
+                        spacing: 0
+
+                        Button:
+                            text: '+'
+                            on_release: root.incrementar_RomeuAndJulieta()
+                        Button:
+                            text: '-'
+                            on_release: root.decrementar_RomeuAndJulieta()
+
+        BoxLayout:
+            orientation:'vertical'
+            size_hint_y: None
+            height: 150
+            padding: 0
+            spacing: 0
+
+            GridLayout:
+                cols: 2
+                spacing:0
+
+                Label:
+                    # id:
+                    text: "Total R$"
+                Label:
+                    id: valorTotalDoPedido
+                    text: "0.00"
+
+        BoxLayout:
+            orientation:'vertical'
+            size_hint_y: None
+            height: 150
+            padding: 0
+            spacing: 0
+
+            GridLayout:
+                cols: 2
+                spacing:0
+
+                Button:
+                    text: 'Menu'
+                    on_release: app.root.current = 'menu'
+                Button:
+                    text: 'Finalizar pedido'
+                    on_release: app.root.current = 'finalizar_pedido'
 
 <Finalizar_Pedido>:
     BoxLayout:
@@ -202,30 +1109,46 @@
             spacing:0
 
             Label:
-                #id:
+                # id:
                 text: "Endereço: "
             TextInput:
-                #id:
+                id: enderecoParaEntregaDoPedido
                 font_size: 30
             Label:
-                #id:
+                # id:
                 text: "Telefone: "
             TextInput:
-                #id:
+                id: telefoneParaContato
                 font_size: 30
-            Label:
-                #id:
-                text: "Forma de pagamento: "
-            TextInput:
-                #id:
-                font_size: 30
-                
-            Button:
-                text: 'Menu'
-                on_release: app.root.current = 'menu'
-            Button:
-                text: 'Pedido'
-                on_release: app.root.current = 'pedido'
+                input_filter:'int' # Só pode digitar numeros inteiros
+
+        BoxLayout:
+            orientation:'vertical'
+            size_hint_y: None
+            height: 150
+            padding: 0
+            spacing: 0
+            Spinner:
+                id: forma_de_pagamento
+                text: "Selecione a forma de pagamento"
+                values: ["Cartão de Credito", "Cartão de Debito","Pix"]
+                on_text: root.spinner_Clicado(self.text)
+        
+        BoxLayout:
+            orientation:'vertical'
+            size_hint_y: None
+            height: 150
+            padding: 0
+            spacing: 0        
+            GridLayout:
+                cols: 2
+                spacing:0        
+                Button:
+                    text: 'Menu'
+                    on_release: app.root.current = 'menu'
+                Button:
+                    text: 'Pedido'
+                    on_release: app.root.current = 'pedido'
 
         Button:
             text: 'Finalizar Pedido'
