@@ -3,11 +3,16 @@
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen
 
+
 import bancoDeDados
 # import funcoes
+from datetime import datetime
+import plyer
 
 global quantidadeMaximaDePizzaDeUmSabor # Pode ser acessada por qualquer função 
 quantidadeMaximaDePizzaDeUmSabor = 10 # Defini a quantidade maxima de cada pizza
+
+global teste
 
 class Gerente_das_telas(ScreenManager):
     pass
@@ -20,6 +25,11 @@ class Login(Screen):
         email = self.ids.log.text
         senha = self.ids.sen.text
         bancoDeDados.procurar(connection, email, senha)
+
+        arquivo = open('C:/Users/noteb/Desktop/Pizzaria_Kivy/arquivos/email.txt', 'w')
+        arquivo.write(email)
+        arquivo.close()
+        print("txt criado")
 
 
 
@@ -44,9 +54,9 @@ class Menu(Screen):
 
 
 class Pedido(Screen):
-# PIZZAS TRADICIONAIS
+    # PIZZAS TRADICIONAIS
 
-## Funções da Pizza Ads
+    ## Funções da Pizza Ads
     def pizza_Ads(self): # Ela será chamada pelas funções incrementar e decrementar
         valorUnitarioDaPizza_Ads = (float(self.ids.valor_Ads.text)) # Pega o valor da pizza e passe ele de str para float
         quantidadeDePizza_Ads = (float(self.ids.quantidade_Ads.text)) # Pega o valor do contador da pizza
@@ -158,7 +168,7 @@ class Pedido(Screen):
             self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
 
     def decrementar_Baiana(self):
-        if (int(self.ids.quantidade_.text)) > 0:
+        if (int(self.ids.quantidade_Baiana.text)) > 0:
             self.ids.quantidade_Baiana.text = str(int(self.ids.quantidade_Baiana.text) - 1) 
             self.pizza_Baiana()
 
@@ -959,7 +969,7 @@ class Pedido(Screen):
             pizza_Brigadeiro = self.pizza_Brigadeiro()
             pizza_Prestigio = self.pizza_Prestigio()
             pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-               
+                
             self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
 
     def decrementar_Salaminho(self):
@@ -1442,13 +1452,145 @@ class Pedido(Screen):
         valorTotalDoPedidoFormatado = "{:.2f}".format(valorTotalDoPedido) # Deixa o valor total do pedido com apenas duas casas decimais
         self.ids.valorTotalDoPedido.text = str(valorTotalDoPedidoFormatado) # Mostra o valor total do pedido na tela
         
+        arquivo = open('C:/Users/noteb/Desktop/Pizzaria_Kivy/arquivos/valorTotalDoPedido.txt', 'w')
+        arquivo.write(valorTotalDoPedidoFormatado)
+        arquivo.close()
+
+        self.salvandoEmTxt()
+
     
+
+    ## Salva a quanidade de cada pizza em txt
+    def salvandoEmTxt(self):
+        n = "\n"
+        arquivo = open('C:/Users/noteb/Desktop/Pizzaria_Kivy/arquivos/quantidadeDePizzas.txt', 'w')
+        arquivo.writelines([
+            self.ids.quantidade_Ads.text, 
+            n, 
+            self.ids.quantidade_Baiana.text, 
+            n, 
+            self.ids.quantidade_Bolonhesa.text, 
+            n, 
+            self.ids.quantidade_Calabresa.text, 
+            n, 
+            self.ids.quantidade_FrangoComCatupiry.text, 
+            n, 
+            self.ids.quantidade_Ituiutaba.text, 
+            n, 
+            self.ids.quantidade_Ituiutaba.text, 
+            n, 
+            self.ids.quantidade_Mucarela.text, 
+            n, 
+            self.ids.quantidade_QuatroQueijos.text, 
+            n, 
+            self.ids.quantidade_TresQueijos.text, 
+            n, 
+            self.ids.quantidade_Brocolis.text, 
+            n, 
+            self.ids.quantidade_Champignon.text, 
+            n, 
+            self.ids.quantidade_CincoQueijos.text, 
+            n, 
+            self.ids.quantidade_Salaminho.text, 
+            n, 
+            self.ids.quantidade_Vegetariana.text, 
+            n, 
+            self.ids.quantidade_Acai.text, 
+            n, 
+            self.ids.quantidade_Banana.text, 
+            n, 
+            self.ids.quantidade_Brigadeiro.text, 
+            n, 
+            self.ids.quantidade_Prestigio.text, 
+            n, 
+            self.ids.quantidade_RomeuAndJulieta.text
+        ])
+
+        arquivo.close()
+
+        teste = self.ids.quantidade_RomeuAndJulieta.text
+
 
 
 class Finalizar_Pedido(Screen):
     def spinner_Clicado(self, value):
         self.ids.forma_de_pagamento.text = value
-    pass
+    # pass
+
+    def atualizarValorDoPedido(self):
+        data_Pedido = datetime.today().strftime('%Y-%m-%d')
+        horario_Pedido = datetime.today().strftime('%H:%M:%S')
+
+        telefone_Pedido = self.ids.telefoneParaContato.text
+        endereco_Pedido = self.ids.enderecoParaEntregaDoPedido.text
+        formaDePagamento_Pedido = self.ids.forma_de_pagamento.text
+        
+        arquivo = open('C:/Users/noteb/Desktop/Pizzaria_Kivy/arquivos/valorTotalDoPedido.txt', 'r')
+        leia_me = (arquivo.readline())
+        valorTotal_Pedido = leia_me[0]
+        arquivo.close()
+
+        arquivo = open('C:/Users/noteb/Desktop/Pizzaria_Kivy/arquivos/email.txt', 'r')
+        leia_me = (arquivo.readlines())
+        email = leia_me[0]
+        print(email)
+        arquivo.close()
+        Contas_id_Pedido = bancoDeDados.procurar_id(email)
+
+        arquivo = open('C:/Users/noteb/Desktop/Pizzaria_Kivy/arquivos/valorTotalDoPedido.txt', 'r')
+        print(arquivo.readline())
+        arquivo.close()
+
+        file = open("C:/Users/noteb/Desktop/Pizzaria_Kivy/arquivos/quantidadeDePizzas.txt", "r") 
+        leia = file.readlines()
+        pizza_Ads_Pedido = leia[0]
+        pizza_Baiana_Pedido = leia[1]
+        pizza_Bolonhesa_Pedido = leia[2]
+        pizza_Calabresa_Pedido = leia[3]
+        pizza_FrangoComCatupiry_Pedido = leia[4]
+        pizza_Ituiutaba_Pedido = leia[5]
+        pizza_Mucarela_Pedido = leia[6]
+        pizza_QuatroQueijos_Pedido = leia[7]
+        pizza_TresQueijos_Pedido = leia[8]
+        pizza_Brocolis_Pedido = leia[9]
+        pizza_Champignon_Pedido = leia[10]
+        pizza_CincoQueijos_Pedido = leia[11]
+        pizza_Salaminho_Pedido = leia[12]
+        pizza_Vegetariana_Pedido = leia[13]
+        pizza_Acai_Pedido = leia[14]
+        pizza_Banana_Pedido = leia[15]
+        pizza_Brigadeiro_Pedido = leia[16]
+        pizza_Prestigio_Pedido = leia[17]
+        pizza_RomeuAndJulieta_Pedido = leia[18]
+        file.close()
+
+        bancoDeDados.insert_table_Pedidos(
+            data_Pedido, 
+            horario_Pedido, 
+            telefone_Pedido, 
+            endereco_Pedido, 
+            formaDePagamento_Pedido, 
+            valorTotal_Pedido, 
+            Contas_id_Pedido, 
+            pizza_Ads_Pedido, 
+            pizza_Baiana_Pedido, 
+            pizza_Bolonhesa_Pedido, 
+            pizza_Calabresa_Pedido, 
+            pizza_FrangoComCatupiry_Pedido, 
+            pizza_Ituiutaba_Pedido, 
+            pizza_Mucarela_Pedido, 
+            pizza_QuatroQueijos_Pedido, 
+            pizza_TresQueijos_Pedido, 
+            pizza_Brocolis_Pedido, 
+            pizza_Champignon_Pedido, 
+            pizza_CincoQueijos_Pedido, 
+            pizza_Salaminho_Pedido, 
+            pizza_Vegetariana_Pedido, 
+            pizza_Acai_Pedido, 
+            pizza_Banana_Pedido, 
+            pizza_Brigadeiro_Pedido, 
+            pizza_Prestigio_Pedido, 
+            pizza_RomeuAndJulieta_Pedido)
 
 
 
@@ -1456,7 +1598,12 @@ class app_kivy_pizzaria(App):
     def build(self):
         return Gerente_das_telas()
 
+    def notificando(self):
+        return plyer.notification.notify(title='app_kivy_pizzaria', message="O app_kivy_pizzaria está em execução")
+
 
 
 if __name__ == '__main__':
+    app_kivy_pizzaria().notificando()
     app_kivy_pizzaria().run()
+    
