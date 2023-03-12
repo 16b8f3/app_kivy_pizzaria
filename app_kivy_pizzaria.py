@@ -1,134 +1,120 @@
-# Importações
-
 from kivy.app import App
+from kivy.uix.widget import Widget
 from kivy.uix.screenmanager import ScreenManager, Screen
-
-
-import bancoDeDados
-# import funcoes
+from kivy.properties import ObjectProperty
+from kivy.lang import Builder
+from kivy.uix.popup import Popup
 from datetime import datetime
-import plyer
 
-global quantidadeMaximaDePizzaDeUmSabor # Pode ser acessada por qualquer função 
-quantidadeMaximaDePizzaDeUmSabor = 10 # Defini a quantidade maxima de cada pizza
+import requests
+import json
+import Verificar_email
+import Verificar_telefone
+import bancoDeDados
 
-global teste
+global quantidadeMaximaDePizzaDeUmSabor 
+global horarioQuePizzariaComecaReceberPedidos
+global horarioQuePizzariaParaDeReceberPedidos
 
-class Gerente_das_telas(ScreenManager):
+quantidadeMaximaDePizzaDeUmSabor = 10 
+horarioQuePizzariaComecaReceberPedidos = "19:00:00" 
+horarioQuePizzariaParaDeReceberPedidos = "23:00:00"
+
+class windowManager(ScreenManager):
     pass
 
-
-
 class Login(Screen):
-    def teste_integrarLogin(self):
-        connection = bancoDeDados.create_server_connection('localhost', 'root', '')
-        email = self.ids.log.text
-        senha = self.ids.sen.text
-        bancoDeDados.procurar(connection, email, senha)
+    email = ObjectProperty(None)
+    senha = ObjectProperty(None)
+    def validar(self):
+        if self.email.text != "" and self.senha.text != "":
+            verificaEmail = Verificar_email.check(self.email.text)
+            if verificaEmail != 1: 
+                proc = bancoDeDados.search_account_id(self.email.text)
+                if proc != 0: 
+                    status = bancoDeDados.search_account_status(self.email.text)
+                    if status == 0:
+                        senha = bancoDeDados.search_account_login(self.email.text, self.senha.text)
+                        if senha != 13:
+                            email = self.email.text
+                            arquivo = open('./email.txt', 'w')
+                            arquivo.write(email)
+                            arquivo.close()
+                            self.limparCamposLogin()
+                            gerenciadorDeJanelas.current = 'menu'
+                        else:
+                            Popup_EmailOuSenhaIncorreto.popFun()
+                    else:
+                        Popup_ContaDesativada.popFun()
+                else:
+                    Popup_EmailOuSenhaIncorreto.popFun()
+            else:
+                Popup_EmailInvalido.popFun()
+        else: 
+            Popup_CampoVazio.popFun()
 
-        arquivo = open('C:/Users/noteb/Desktop/Pizzaria_Kivy/arquivos/email.txt', 'w')
-        arquivo.write(email)
-        arquivo.close()
-        print("txt criado")
-
-
-
+    def limparCamposLogin(self):
+        self.ids.email.text = ''
+        self.ids.senha.text = ''
+    
 class Cadastrar(Screen):
-    def teste_integrarCadastro(self):
-        connection = bancoDeDados.create_server_connection('localhost', 'root', '')
-        nome = self.ids.nome.text
-        sobrenome = self.ids.sobrenome.text
-        email = self.ids.email.text
-        senha = self.ids.senha.text
-        bancoDeDados.insert_table_Contas(connection, nome, sobrenome, email, senha)
-        # self.ids.nome.text = ''
-        # self.ids.sobrenome.text = ''
-        # self.ids.email.text = ''
-        # self.ids.senha.text = ''
+    nome = ObjectProperty(None)
+    sobrenome = ObjectProperty(None)
+    email = ObjectProperty(None)
+    senha = ObjectProperty(None)
+    confirmarSenha = ObjectProperty(None)
+    def validar(self):
+        if self.nome.text != "" and self.sobrenome.text != "" and self.email.text != "" and self.senha.text != "":
+            verificaEmail = Verificar_email.check(self.email.text)
+            if verificaEmail != 1:
+                if len(self.senha.text) >= 6 and len(self.senha.text) <= 20:
+                    if self.senha.text == self.confirmarSenha.text:
+                        verifica = bancoDeDados.insert_table_Contas(self.nome.text, self.sobrenome.text, self.email.text, self.senha.text)
+                        if verifica == 0:
+                            Popup_CadastroRealizadoComSucesso.popFun() 
+                            self.limparCamposCadastro()
+                        else:
+                            Popup_ErroInesperado.popFun()
+                    else:
+                        Popup_SenhasDiferentes.popFun()
+                else:
+                    Popup_LimiteDeCarateresNaSenha.popFun()
+            else:
+                Popup_EmailInvalido.popFun()
+        else:
+            Popup_CampoVazio.popFun()
 
-
-
+    def limparCamposCadastro(self):
+        self.ids.nome.text = ''
+        self.ids.sobrenome.text = ''
+        self.ids.email.text = ''
+        self.ids.senha.text = ''
+        self.ids.confirmarSenha.text = ''
+    
 class Menu(Screen):
     pass
 
-
-
 class Pedido(Screen):
     # PIZZAS TRADICIONAIS
+    def pizza_Ads(self): 
+        valorUnitarioDaPizza_Ads = (float(self.ids.valor_Ads.text)) 
+        quantidadeDePizza_Ads = (float(self.ids.quantidade_Ads.text)) 
+        valorTotalDaPizza_Ads = quantidadeDePizza_Ads * valorUnitarioDaPizza_Ads 
+        return valorTotalDaPizza_Ads 
 
-    ## Funções da Pizza Ads
-    def pizza_Ads(self): # Ela será chamada pelas funções incrementar e decrementar
-        valorUnitarioDaPizza_Ads = (float(self.ids.valor_Ads.text)) # Pega o valor da pizza e passe ele de str para float
-        quantidadeDePizza_Ads = (float(self.ids.quantidade_Ads.text)) # Pega o valor do contador da pizza
-        valorTotalDaPizza_Ads = quantidadeDePizza_Ads * valorUnitarioDaPizza_Ads # Faz o calculo do total da pizza multiplicando o valor e a quantidade
-        return valorTotalDaPizza_Ads # Retorna o valor total da pizza
-
-    def incrementar_Ads(self): # Será chamada sempre que for apertado o botão de + da pizza
-        if (int(self.ids.quantidade_Ads.text)) < quantidadeMaximaDePizzaDeUmSabor: # Enquanto a quantidade for menor que 10 vai acontecer...
-            self.ids.quantidade_Ads.text = str(int(self.ids.quantidade_Ads.text) + 1) # transforma em int soma 1 e transforma o novo valor em str
-            self.pizza_Ads() # Chama a função para atualizar o valor total do pedido
-
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Baiana = self.pizza_Baiana() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Bolonhesa = self.pizza_Bolonhesa() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Calabresa = self.pizza_Calabresa() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Ituiutaba = self.pizza_Ituiutaba() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Mucarela = self.pizza_Mucarela() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_TresQueijos = self.pizza_TresQueijos() # Atribui a variavel a função que retorna o valor total da pizza
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Champignon = self.pizza_Champignon() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_CincoQueijos = self.pizza_CincoQueijos() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Salaminho = self.pizza_Salaminho() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Vegetariana = self.pizza_Vegetariana() # Atribui a variavel a função que retorna o valor total da pizza
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Banana = self.pizza_Banana() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Brigadeiro = self.pizza_Brigadeiro() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Prestigio = self.pizza_Prestigio() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta() # Atribui a variavel a função que retorna o valor total da pizza
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta) # Chama a função responsavel para somar o valor total e mostrar ele
+    def incrementar_Ads(self): 
+        if (int(self.ids.quantidade_Ads.text)) < quantidadeMaximaDePizzaDeUmSabor: 
+            self.ids.quantidade_Ads.text = str(int(self.ids.quantidade_Ads.text) + 1)
+            self.pizza_Ads() 
+            self.atualizaValores()
+        elif (int(self.ids.quantidade_Ads.text)) == 10:
+            Popup_LimiteMaximoPorPizza.popFun()
 
     def decrementar_Ads(self):
         if (int(self.ids.quantidade_Ads.text)) > 0:
             self.ids.quantidade_Ads.text = str(int(self.ids.quantidade_Ads.text) - 1) 
-                
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Baiana = self.pizza_Baiana() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Bolonhesa = self.pizza_Bolonhesa() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Calabresa = self.pizza_Calabresa() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Ituiutaba = self.pizza_Ituiutaba() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Mucarela = self.pizza_Mucarela() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_TresQueijos = self.pizza_TresQueijos() # Atribui a variavel a função que retorna o valor total da pizza
+            self.atualizaValores()
 
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Champignon = self.pizza_Champignon() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_CincoQueijos = self.pizza_CincoQueijos() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Salaminho = self.pizza_Salaminho() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Vegetariana = self.pizza_Vegetariana() # Atribui a variavel a função que retorna o valor total da pizza
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Banana = self.pizza_Banana() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Brigadeiro = self.pizza_Brigadeiro() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_Prestigio = self.pizza_Prestigio() # Atribui a variavel a função que retorna o valor total da pizza
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta() # Atribui a variavel a função que retorna o valor total da pizza
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta) # Chama a função responsavel para somar o valor total e mostrar ele
-
-
-
-    ## Funções da Pizza Baiana
     def pizza_Baiana(self):
         valorUnitarioDaPizza_Baiana = (float(self.ids.valor_Baiana.text))
         quantidadeDePizza_Baiana = (float(self.ids.quantidade_Baiana.text))
@@ -138,70 +124,17 @@ class Pedido(Screen):
     def incrementar_Baiana(self): 
         if (int(self.ids.quantidade_Baiana.text)) < quantidadeMaximaDePizzaDeUmSabor:
             self.ids.quantidade_Baiana.text = str(int(self.ids.quantidade_Baiana.text) + 1) 
-            self.pizza_Baiana()
-                
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
+            self.pizza_Baiana()   
+            self.atualizaValores()
+        elif (int(self.ids.quantidade_Baiana.text)) == 10:
+            Popup_LimiteMaximoPorPizza.popFun()
 
     def decrementar_Baiana(self):
         if (int(self.ids.quantidade_Baiana.text)) > 0:
             self.ids.quantidade_Baiana.text = str(int(self.ids.quantidade_Baiana.text) - 1) 
             self.pizza_Baiana()
+            self.atualizaValores()
 
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
-
-
-
-    ## Funções da Pizza Bolonhesa
     def pizza_Bolonhesa(self):
         valorUnitarioDaPizza_Bolonhesa = (float(self.ids.valor_Bolonhesa.text))
         quantidadeDePizza_Bolonhesa = (float(self.ids.quantidade_Bolonhesa.text))
@@ -212,69 +145,16 @@ class Pedido(Screen):
         if (int(self.ids.quantidade_Bolonhesa.text)) < quantidadeMaximaDePizzaDeUmSabor:
             self.ids.quantidade_Bolonhesa.text = str(int(self.ids.quantidade_Bolonhesa.text) + 1) 
             self.pizza_Bolonhesa()
-              
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
+            self.atualizaValores()
+        elif (int(self.ids.quantidade_Bolonhesa.text)) == 10:
+            Popup_LimiteMaximoPorPizza.popFun()
 
     def decrementar_Bolonhesa(self):
         if (int(self.ids.quantidade_Bolonhesa.text)) > 0:
             self.ids.quantidade_Bolonhesa.text = str(int(self.ids.quantidade_Bolonhesa.text) - 1) 
             self.pizza_Bolonhesa()
+            self.atualizaValores()
 
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
-
-
-
-    ## Funções da Pizza Calabresa
     def pizza_Calabresa(self):
         valorUnitarioDaPizza_Calabresa = (float(self.ids.valor_Calabresa.text))
         quantidadeDePizza_Calabresa = (float(self.ids.quantidade_Calabresa.text))
@@ -285,69 +165,16 @@ class Pedido(Screen):
         if (int(self.ids.quantidade_Calabresa.text)) < quantidadeMaximaDePizzaDeUmSabor:
             self.ids.quantidade_Calabresa.text = str(int(self.ids.quantidade_Calabresa.text) + 1) 
             self.pizza_Calabresa()
-                
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
+            self.atualizaValores()
+        elif (int(self.ids.quantidade_Calabresa.text)) == 10:
+            Popup_LimiteMaximoPorPizza.popFun()
 
     def decrementar_Calabresa(self):
         if (int(self.ids.quantidade_Calabresa.text)) > 0:
             self.ids.quantidade_Calabresa.text = str(int(self.ids.quantidade_Calabresa.text) - 1) 
             self.pizza_Calabresa()
+            self.atualizaValores()
 
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
-
-
-
-    ## Funções da Pizza Frango com Catupiry
     def pizza_FrangoComCatupiry(self):
         valorUnitarioDaPizza_FrangoComCatupiry = (float(self.ids.valor_FrangoComCatupiry.text))
         quantidadeDePizza_FrangoComCatupiry = (float(self.ids.quantidade_FrangoComCatupiry.text))
@@ -358,69 +185,16 @@ class Pedido(Screen):
         if (int(self.ids.quantidade_FrangoComCatupiry.text)) < quantidadeMaximaDePizzaDeUmSabor:
             self.ids.quantidade_FrangoComCatupiry.text = str(int(self.ids.quantidade_FrangoComCatupiry.text) + 1) 
             self.pizza_FrangoComCatupiry()
-              
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
+            self.atualizaValores()
+        elif (int(self.ids.quantidade_FrangoComCatupiry.text)) == 10:
+            Popup_LimiteMaximoPorPizza.popFun()
 
     def decrementar_FrangoComCatupiry(self):
-        if (int(self.ids.quantidade_.text)) > 0:
+        if (int(self.ids.quantidade_FrangoComCatupiry.text)) > 0:
             self.ids.quantidade_FrangoComCatupiry.text = str(int(self.ids.quantidade_FrangoComCatupiry.text) - 1) 
             self.pizza_FrangoComCatupiry()
+            self.atualizaValores()
 
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-               
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
-
-
-
-    ## Funções da Pizza Ituiutaba
     def pizza_Ituiutaba(self):
         valorUnitarioDaPizza_Ituiutaba = (float(self.ids.valor_Ituiutaba.text))
         quantidadeDePizza_Ituiutaba = (float(self.ids.quantidade_Ituiutaba.text))
@@ -430,70 +204,17 @@ class Pedido(Screen):
     def incrementar_Ituiutaba(self): 
         if (int(self.ids.quantidade_Ituiutaba.text)) < quantidadeMaximaDePizzaDeUmSabor:
             self.ids.quantidade_Ituiutaba.text = str(int(self.ids.quantidade_Ituiutaba.text) + 1) 
-            self.pizza_Ituiutaba()
-                
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-              
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
+            self.pizza_Ituiutaba()  
+            self.atualizaValores()
+        elif (int(self.ids.quantidade_Ituiutaba.text)) == 10:
+            Popup_LimiteMaximoPorPizza.popFun()
 
     def decrementar_Ituiutaba(self):
         if (int(self.ids.quantidade_Ituiutaba.text)) > 0:
             self.ids.quantidade_Ituiutaba.text = str(int(self.ids.quantidade_Ituiutaba.text) - 1) 
             self.pizza_Ituiutaba()
+            self.atualizaValores()
 
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
-
-
-
-    ## Funções da Pizza Mucarela
     def pizza_Mucarela(self):
         valorUnitarioDaPizza_Mucarela = (float(self.ids.valor_Mucarela.text))
         quantidadeDePizza_Mucarela = (float(self.ids.quantidade_Mucarela.text))
@@ -503,70 +224,17 @@ class Pedido(Screen):
     def incrementar_Mucarela(self): 
         if (int(self.ids.quantidade_Mucarela.text)) < quantidadeMaximaDePizzaDeUmSabor:
             self.ids.quantidade_Mucarela.text = str(int(self.ids.quantidade_Mucarela.text) + 1) 
-            self.pizza_Mucarela()
-                
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
+            self.pizza_Mucarela() 
+            self.atualizaValores()
+        elif (int(self.ids.quantidade_Mucarela.text)) == 10:
+            Popup_LimiteMaximoPorPizza.popFun()
 
     def decrementar_Mucarela(self):
         if (int(self.ids.quantidade_Mucarela.text)) > 0:
             self.ids.quantidade_Mucarela.text = str(int(self.ids.quantidade_Mucarela.text) - 1) 
             self.pizza_Mucarela()
+            self.atualizaValores()
 
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-              
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
-
-
-
-    ## Funções da Pizza Quatro Queijos
     def pizza_QuatroQueijos(self):
         valorUnitarioDaPizza_QuatroQueijos = (float(self.ids.valor_QuatroQueijos.text))
         quantidadeDePizza_QuatroQueijos = (float(self.ids.quantidade_QuatroQueijos.text))
@@ -577,69 +245,16 @@ class Pedido(Screen):
         if (int(self.ids.quantidade_QuatroQueijos.text)) < quantidadeMaximaDePizzaDeUmSabor:
             self.ids.quantidade_QuatroQueijos.text = str(int(self.ids.quantidade_QuatroQueijos.text) + 1) 
             self.pizza_QuatroQueijos()
-                
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
+            self.atualizaValores()
+        elif (int(self.ids.quantidade_QuatroQueijos.text)) == 10:
+            Popup_LimiteMaximoPorPizza.popFun()
 
     def decrementar_QuatroQueijos(self):
         if (int(self.ids.quantidade_QuatroQueijos.text)) > 0:
             self.ids.quantidade_QuatroQueijos.text = str(int(self.ids.quantidade_QuatroQueijos.text) - 1) 
             self.pizza_QuatroQueijos()
+            self.atualizaValores()
 
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
-
-
-
-    ## Funções da Pizza Tres Queijos
     def pizza_TresQueijos(self):
         valorUnitarioDaPizza_TresQueijos = (float(self.ids.valor_TresQueijos.text))
         quantidadeDePizza_TresQueijos = (float(self.ids.quantidade_TresQueijos.text))
@@ -650,71 +265,17 @@ class Pedido(Screen):
         if (int(self.ids.quantidade_TresQueijos.text)) < quantidadeMaximaDePizzaDeUmSabor:
             self.ids.quantidade_TresQueijos.text = str(int(self.ids.quantidade_TresQueijos.text) + 1) 
             self.pizza_TresQueijos()
-                
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
+            self.atualizaValores()
+        elif (int(self.ids.quantidade_TresQueijos.text)) == 10:
+            Popup_LimiteMaximoPorPizza.popFun()
 
     def decrementar_TresQueijos(self):
         if (int(self.ids.quantidade_TresQueijos.text)) > 0:
             self.ids.quantidade_TresQueijos.text = str(int(self.ids.quantidade_TresQueijos.text) - 1) 
             self.pizza_TresQueijos()
-
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-               
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
-
-
+            self.atualizaValores()
 
     # PIZZAS ESPECIAIS
-
-    ## Funções da Pizza Brocolis
     def pizza_Brocolis(self):
         valorUnitarioDaPizza_Brocolis = (float(self.ids.valor_Brocolis.text))
         quantidadeDePizza_Brocolis = (float(self.ids.quantidade_Brocolis.text))
@@ -725,69 +286,16 @@ class Pedido(Screen):
         if (int(self.ids.quantidade_Brocolis.text)) < quantidadeMaximaDePizzaDeUmSabor:
             self.ids.quantidade_Brocolis.text = str(int(self.ids.quantidade_Brocolis.text) + 1) 
             self.pizza_Brocolis()
-                
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
+            self.atualizaValores()
+        elif (int(self.ids.quantidade_Brocolis.text)) == 10:
+            Popup_LimiteMaximoPorPizza.popFun()
 
     def decrementar_Brocolis(self):
         if (int(self.ids.quantidade_Brocolis.text)) > 0:
             self.ids.quantidade_Brocolis.text = str(int(self.ids.quantidade_Brocolis.text) - 1) 
             self.pizza_Brocolis()
+            self.atualizaValores()
 
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
-
-
-
-    ## Funções da Pizza Champignon
     def pizza_Champignon(self):
         valorUnitarioDaPizza_Champignon = (float(self.ids.valor_Champignon.text))
         quantidadeDePizza_Champignon = (float(self.ids.quantidade_Champignon.text))
@@ -797,70 +305,17 @@ class Pedido(Screen):
     def incrementar_Champignon(self): 
         if (int(self.ids.quantidade_Champignon.text)) < quantidadeMaximaDePizzaDeUmSabor:
             self.ids.quantidade_Champignon.text = str(int(self.ids.quantidade_Champignon.text) + 1) 
-            self.pizza_Champignon()
-                
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
+            self.pizza_Champignon()   
+            self.atualizaValores()
+        elif (int(self.ids.quantidade_Champignon.text)) == 10:
+            Popup_LimiteMaximoPorPizza.popFun()
 
     def decrementar_Champignon(self):
         if (int(self.ids.quantidade_Champignon.text)) > 0:
             self.ids.quantidade_Champignon.text = str(int(self.ids.quantidade_Champignon.text) - 1) 
             self.pizza_Champignon()
+            self.atualizaValores()
 
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-              
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
-
-
-
-    ## Funções da Pizza Cinco Queijos
     def pizza_CincoQueijos(self):
         valorUnitarioDaPizza_CincoQueijos = (float(self.ids.valor_CincoQueijos.text))
         quantidadeDePizza_CincoQueijos = (float(self.ids.quantidade_CincoQueijos.text))
@@ -871,69 +326,16 @@ class Pedido(Screen):
         if (int(self.ids.quantidade_CincoQueijos.text)) < quantidadeMaximaDePizzaDeUmSabor:
             self.ids.quantidade_CincoQueijos.text = str(int(self.ids.quantidade_CincoQueijos.text) + 1) 
             self.pizza_CincoQueijos()
-                
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
+            self.atualizaValores()
+        elif (int(self.ids.quantidade_CincoQueijos.text)) == 10:
+            Popup_LimiteMaximoPorPizza.popFun()
 
     def decrementar_CincoQueijos(self):
         if (int(self.ids.quantidade_CincoQueijos.text)) > 0:
             self.ids.quantidade_CincoQueijos.text = str(int(self.ids.quantidade_CincoQueijos.text) - 1) 
             self.pizza_CincoQueijos()
+            self.atualizaValores()
 
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
-
-
-
-    ## Funções da Pizza Salaminho
     def pizza_Salaminho(self):
         valorUnitarioDaPizza_Salaminho = (float(self.ids.valor_Salaminho.text))
         quantidadeDePizza_Salaminho = (float(self.ids.quantidade_Salaminho.text))
@@ -944,69 +346,16 @@ class Pedido(Screen):
         if (int(self.ids.quantidade_Salaminho.text)) < quantidadeMaximaDePizzaDeUmSabor:
             self.ids.quantidade_Salaminho.text = str(int(self.ids.quantidade_Salaminho.text) + 1) 
             self.pizza_Salaminho()
-              
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
+            self.atualizaValores()
+        elif (int(self.ids.quantidade_Salaminho.text)) == 10:
+            Popup_LimiteMaximoPorPizza.popFun()
 
     def decrementar_Salaminho(self):
         if (int(self.ids.quantidade_Salaminho.text)) > 0:
             self.ids.quantidade_Salaminho.text = str(int(self.ids.quantidade_Salaminho.text) - 1) 
             self.pizza_Salaminho()
+            self.atualizaValores()
 
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-              
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
-
-
-
-    ## Funções da Pizza Vegetariana
     def pizza_Vegetariana(self):
         valorUnitarioDaPizza_Vegetariana = (float(self.ids.valor_Vegetariana.text))
         quantidadeDePizza_Vegetariana = (float(self.ids.quantidade_Vegetariana.text))
@@ -1017,67 +366,15 @@ class Pedido(Screen):
         if (int(self.ids.quantidade_Vegetariana.text)) < quantidadeMaximaDePizzaDeUmSabor:
             self.ids.quantidade_Vegetariana.text = str(int(self.ids.quantidade_Vegetariana.text) + 1) 
             self.pizza_Vegetariana()
-                
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
+            self.atualizaValores()
+        elif (int(self.ids.quantidade_Vegetariana.text)) == 10:
+            Popup_LimiteMaximoPorPizza.popFun()
 
     def decrementar_Vegetariana(self):
         if (int(self.ids.quantidade_Vegetariana.text)) > 0:
             self.ids.quantidade_Vegetariana.text = str(int(self.ids.quantidade_Vegetariana.text) - 1) 
             self.pizza_Vegetariana()
-
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
-
-
+            self.atualizaValores()
 
     # PIZZAS DOCES
 
@@ -1092,69 +389,16 @@ class Pedido(Screen):
         if (int(self.ids.quantidade_Acai.text)) < quantidadeMaximaDePizzaDeUmSabor:
             self.ids.quantidade_Acai.text = str(int(self.ids.quantidade_Acai.text) + 1) 
             self.pizza_Acai()
-                
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-               
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
+            self.atualizaValores()
+        elif (int(self.ids.quantidade_Acai.text)) == 10:
+            Popup_LimiteMaximoPorPizza.popFun()
 
     def decrementar_Acai(self):
         if (int(self.ids.quantidade_Acai.text)) > 0:
             self.ids.quantidade_Acai.text = str(int(self.ids.quantidade_Acai.text) - 1) 
             self.pizza_Acai()
+            self.atualizaValores()
 
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
-
-
-
-    ## Funções da Pizza Banana
     def pizza_Banana(self):
         valorUnitarioDaPizza_Banana = (float(self.ids.valor_Banana.text))
         quantidadeDePizza_Banana = (float(self.ids.quantidade_Banana.text))
@@ -1165,69 +409,16 @@ class Pedido(Screen):
         if (int(self.ids.quantidade_Banana.text)) < quantidadeMaximaDePizzaDeUmSabor:
             self.ids.quantidade_Banana.text = str(int(self.ids.quantidade_Banana.text) + 1) 
             self.pizza_Banana()
-                
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
+            self.atualizaValores()
+        elif (int(self.ids.quantidade_Banana.text)) == 10:
+            Popup_LimiteMaximoPorPizza.popFun()
 
     def decrementar_Banana(self):
         if (int(self.ids.quantidade_Banana.text)) > 0:
             self.ids.quantidade_Banana.text = str(int(self.ids.quantidade_Banana.text) - 1) 
             self.pizza_Banana()
+            self.atualizaValores()
 
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-             
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
-
-
-
-    ## Funções da Pizza Brigadeiro
     def pizza_Brigadeiro(self):
         valorUnitarioDaPizza_Brigadeiro = (float(self.ids.valor_Brigadeiro.text))
         quantidadeDePizza_Brigadeiro = (float(self.ids.quantidade_Brigadeiro.text))
@@ -1237,70 +428,17 @@ class Pedido(Screen):
     def incrementar_Brigadeiro(self): 
         if (int(self.ids.quantidade_Brigadeiro.text)) < quantidadeMaximaDePizzaDeUmSabor:
             self.ids.quantidade_Brigadeiro.text = str(int(self.ids.quantidade_Brigadeiro.text) + 1) 
-            self.pizza_Brigadeiro()
-                
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
+            self.pizza_Brigadeiro()    
+            self.atualizaValores()
+        elif (int(self.ids.quantidade_Brigadeiro.text)) == 10:
+            Popup_LimiteMaximoPorPizza.popFun()
 
     def decrementar_Brigadeiro(self):
         if (int(self.ids.quantidade_Brigadeiro.text)) > 0:
             self.ids.quantidade_Brigadeiro.text = str(int(self.ids.quantidade_Brigadeiro.text) - 1) 
             self.pizza_Brigadeiro()
+            self.atualizaValores()
 
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
-
-
-
-    ## Funções da Pizza Prestigio
     def pizza_Prestigio(self):
         valorUnitarioDaPizza_Prestigio = (float(self.ids.valor_Prestigio.text))
         quantidadeDePizza_Prestigio = (float(self.ids.quantidade_Prestigio.text))
@@ -1311,69 +449,16 @@ class Pedido(Screen):
         if (int(self.ids.quantidade_Prestigio.text)) < quantidadeMaximaDePizzaDeUmSabor:
             self.ids.quantidade_Prestigio.text = str(int(self.ids.quantidade_Prestigio.text) + 1) 
             self.pizza_Prestigio()
-                
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
+            self.atualizaValores()
+        elif (int(self.ids.quantidade_Prestigio.text)) == 10:
+            Popup_LimiteMaximoPorPizza.popFun()
 
     def decrementar_Prestigio(self):
         if (int(self.ids.quantidade_Prestigio.text)) > 0:
             self.ids.quantidade_Prestigio.text = str(int(self.ids.quantidade_Prestigio.text) - 1) 
             self.pizza_Prestigio()
+            self.atualizaValores()
 
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-                
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
-
-
-
-    ## Funções da Pizza Romeu e Julieta
     def pizza_RomeuAndJulieta(self):
         valorUnitarioDaPizza_RomeuAndJulieta = (float(self.ids.valor_RomeuAndJulieta.text))
         quantidadeDePizza_RomeuAndJulieta = (float(self.ids.quantidade_RomeuAndJulieta.text))
@@ -1384,40 +469,18 @@ class Pedido(Screen):
         if (int(self.ids.quantidade_RomeuAndJulieta.text)) < quantidadeMaximaDePizzaDeUmSabor:
             self.ids.quantidade_RomeuAndJulieta.text = str(int(self.ids.quantidade_RomeuAndJulieta.text) + 1) 
             self.pizza_RomeuAndJulieta()
-                
-            ### Pizzas Tradicionais
-            pizza_Ads = self.pizza_Ads()
-            pizza_Baiana = self.pizza_Baiana()
-            pizza_Bolonhesa = self.pizza_Bolonhesa()
-            pizza_Calabresa = self.pizza_Calabresa()
-            pizza_FrangoComCatupiry = self.pizza_FrangoComCatupiry()
-            pizza_Ituiutaba = self.pizza_Ituiutaba()
-            pizza_Mucarela = self.pizza_Mucarela()
-            pizza_QuatroQueijos = self.pizza_QuatroQueijos()
-            pizza_TresQueijos = self.pizza_TresQueijos()
-
-            ### Pizzas Especiais
-            pizza_Brocolis = self.pizza_Brocolis()
-            pizza_Champignon = self.pizza_Champignon()
-            pizza_CincoQueijos = self.pizza_CincoQueijos()
-            pizza_Salaminho = self.pizza_Salaminho()
-            pizza_Vegetariana = self.pizza_Vegetariana()
-
-            ### Pizzas Doces
-            pizza_Acai = self.pizza_Acai()
-            pizza_Banana = self.pizza_Banana()
-            pizza_Brigadeiro = self.pizza_Brigadeiro()
-            pizza_Prestigio = self.pizza_Prestigio()
-            pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
-               
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
+            self.atualizaValores()
+        elif (int(self.ids.quantidade_RomeuAndJulieta.text)) == 10:
+            Popup_LimiteMaximoPorPizza.popFun()
 
     def decrementar_RomeuAndJulieta(self):
         if (int(self.ids.quantidade_RomeuAndJulieta.text)) > 0:
             self.ids.quantidade_RomeuAndJulieta.text = str(int(self.ids.quantidade_RomeuAndJulieta.text) - 1) 
             self.pizza_RomeuAndJulieta()
+            self.atualizaValores()
 
-            ### Pizzas Tradicionais
+    def atualizaValores(self):
+        ### Pizzas Tradicionais
             pizza_Ads = self.pizza_Ads()
             pizza_Baiana = self.pizza_Baiana()
             pizza_Bolonhesa = self.pizza_Bolonhesa()
@@ -1427,14 +490,12 @@ class Pedido(Screen):
             pizza_Mucarela = self.pizza_Mucarela()
             pizza_QuatroQueijos = self.pizza_QuatroQueijos()
             pizza_TresQueijos = self.pizza_TresQueijos()
-
             ### Pizzas Especiais
             pizza_Brocolis = self.pizza_Brocolis()
             pizza_Champignon = self.pizza_Champignon()
             pizza_CincoQueijos = self.pizza_CincoQueijos()
             pizza_Salaminho = self.pizza_Salaminho()
             pizza_Vegetariana = self.pizza_Vegetariana()
-
             ### Pizzas Doces
             pizza_Acai = self.pizza_Acai()
             pizza_Banana = self.pizza_Banana()
@@ -1442,168 +503,471 @@ class Pedido(Screen):
             pizza_Prestigio = self.pizza_Prestigio()
             pizza_RomeuAndJulieta = self.pizza_RomeuAndJulieta()
                 
-            self.valorTotalDoPedido(pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta)
+            self.valorTotalDoPedido(pizza_Ads, 
+                                    pizza_Baiana, 
+                                    pizza_Bolonhesa, 
+                                    pizza_Calabresa, 
+                                    pizza_FrangoComCatupiry, 
+                                    pizza_Ituiutaba, 
+                                    pizza_Mucarela, 
+                                    pizza_QuatroQueijos, 
+                                    pizza_TresQueijos, 
+                                    pizza_Brocolis, 
+                                    pizza_Champignon, 
+                                    pizza_CincoQueijos, 
+                                    pizza_Salaminho, 
+                                    pizza_Vegetariana, 
+                                    pizza_Acai, 
+                                    pizza_Banana, 
+                                    pizza_Brigadeiro, 
+                                    pizza_Prestigio, 
+                                    pizza_RomeuAndJulieta
+                                   )
 
-
-
-    ## Função que faz a contabilidade do pedido 
     def valorTotalDoPedido(self, pizza_Ads, pizza_Baiana, pizza_Bolonhesa, pizza_Calabresa, pizza_FrangoComCatupiry, pizza_Ituiutaba, pizza_Mucarela, pizza_QuatroQueijos, pizza_TresQueijos, pizza_Brocolis, pizza_Champignon, pizza_CincoQueijos, pizza_Salaminho, pizza_Vegetariana, pizza_Acai, pizza_Banana, pizza_Brigadeiro, pizza_Prestigio, pizza_RomeuAndJulieta): # Será chamada sempre que for apertado + ou - em qualquer pizza
         valorTotalDoPedido = pizza_Ads + pizza_Baiana + pizza_Bolonhesa + pizza_Calabresa + pizza_FrangoComCatupiry + pizza_Ituiutaba + pizza_Mucarela + pizza_QuatroQueijos + pizza_TresQueijos + pizza_Brocolis + pizza_Champignon + pizza_CincoQueijos + pizza_Salaminho + pizza_Vegetariana + pizza_Acai + pizza_Banana + pizza_Brigadeiro + pizza_Prestigio + pizza_RomeuAndJulieta # Faz a soma de todas as pizzas
         valorTotalDoPedidoFormatado = "{:.2f}".format(valorTotalDoPedido) # Deixa o valor total do pedido com apenas duas casas decimais
         self.ids.valorTotalDoPedido.text = str(valorTotalDoPedidoFormatado) # Mostra o valor total do pedido na tela
-        
-        arquivo = open('C:/Users/noteb/Desktop/Pizzaria_Kivy/arquivos/valorTotalDoPedido.txt', 'w')
+
+        arquivo = open('./valorTotalDoPedido.txt', 'w')
         arquivo.write(valorTotalDoPedidoFormatado)
         arquivo.close()
 
-        self.salvandoEmTxt()
+        def salvandoEmTxt(self):
+            n = "\n"
+            arquivo = open('./quantidadeDePizzas.txt', 'w')
+            arquivo.writelines([
+                self.ids.quantidade_Ads.text, 
+                n, 
+                self.ids.quantidade_Baiana.text, 
+                n, 
+                self.ids.quantidade_Bolonhesa.text, 
+                n, 
+                self.ids.quantidade_Calabresa.text, 
+                n, 
+                self.ids.quantidade_FrangoComCatupiry.text, 
+                n, 
+                self.ids.quantidade_Ituiutaba.text, 
+                n, 
+                self.ids.quantidade_Ituiutaba.text, 
+                n, 
+                self.ids.quantidade_Mucarela.text, 
+                n, 
+                self.ids.quantidade_QuatroQueijos.text, 
+                n, 
+                self.ids.quantidade_TresQueijos.text, 
+                n, 
+                self.ids.quantidade_Brocolis.text, 
+                n, 
+                self.ids.quantidade_Champignon.text, 
+                n, 
+                self.ids.quantidade_CincoQueijos.text, 
+                n, 
+                self.ids.quantidade_Salaminho.text, 
+                n, 
+                self.ids.quantidade_Vegetariana.text, 
+                n, 
+                self.ids.quantidade_Acai.text, 
+                n, 
+                self.ids.quantidade_Banana.text, 
+                n, 
+                self.ids.quantidade_Brigadeiro.text, 
+                n, 
+                self.ids.quantidade_Prestigio.text, 
+                n, 
+                self.ids.quantidade_RomeuAndJulieta.text
+            ])
+            arquivo.close()
 
-    
+    def verificarHorario(self):
+        horario_Pedido = datetime.today().strftime('%H:%M:%S')
 
-    ## Salva a quanidade de cada pizza em txt
-    def salvandoEmTxt(self):
-        n = "\n"
-        arquivo = open('C:/Users/noteb/Desktop/Pizzaria_Kivy/arquivos/quantidadeDePizzas.txt', 'w')
-        arquivo.writelines([
-            self.ids.quantidade_Ads.text, 
-            n, 
-            self.ids.quantidade_Baiana.text, 
-            n, 
-            self.ids.quantidade_Bolonhesa.text, 
-            n, 
-            self.ids.quantidade_Calabresa.text, 
-            n, 
-            self.ids.quantidade_FrangoComCatupiry.text, 
-            n, 
-            self.ids.quantidade_Ituiutaba.text, 
-            n, 
-            self.ids.quantidade_Ituiutaba.text, 
-            n, 
-            self.ids.quantidade_Mucarela.text, 
-            n, 
-            self.ids.quantidade_QuatroQueijos.text, 
-            n, 
-            self.ids.quantidade_TresQueijos.text, 
-            n, 
-            self.ids.quantidade_Brocolis.text, 
-            n, 
-            self.ids.quantidade_Champignon.text, 
-            n, 
-            self.ids.quantidade_CincoQueijos.text, 
-            n, 
-            self.ids.quantidade_Salaminho.text, 
-            n, 
-            self.ids.quantidade_Vegetariana.text, 
-            n, 
-            self.ids.quantidade_Acai.text, 
-            n, 
-            self.ids.quantidade_Banana.text, 
-            n, 
-            self.ids.quantidade_Brigadeiro.text, 
-            n, 
-            self.ids.quantidade_Prestigio.text, 
-            n, 
-            self.ids.quantidade_RomeuAndJulieta.text
-        ])
-
-        arquivo.close()
-
-        teste = self.ids.quantidade_RomeuAndJulieta.text
-
-
-
+        if horario_Pedido >= horarioQuePizzariaComecaReceberPedidos and horario_Pedido <= horarioQuePizzariaParaDeReceberPedidos:
+            gerenciadorDeJanelas.current = 'finalizar_pedido'
+        else:
+            Popup_ForaHorarioDePedido.popFun() # pop-up avisando que ainda não estão recebendo pedidos
+        
 class Finalizar_Pedido(Screen):
-    def spinner_Clicado(self, value):
-        self.ids.forma_de_pagamento.text = value
-    # pass
+    enderecoParaEntregaDoPedido = ObjectProperty(None)
+    numeroParaEntregaDoPedido = ObjectProperty(None)
+    bairroParaEntregaDoPedido = ObjectProperty(None)
+    telefoneParaContato = ObjectProperty(None)
+    forma_de_pagamento = ObjectProperty(None)
+    
+    def on_spinner_select(self, text):
+        return text
+    
+    def validar(self):
+        quantidadeDeCaracteres = len(str(self.enderecoParaEntregaDoPedido.text))
 
-    def atualizarValorDoPedido(self):
         data_Pedido = datetime.today().strftime('%Y-%m-%d')
         horario_Pedido = datetime.today().strftime('%H:%M:%S')
 
-        telefone_Pedido = self.ids.telefoneParaContato.text
-        endereco_Pedido = self.ids.enderecoParaEntregaDoPedido.text
-        formaDePagamento_Pedido = self.ids.forma_de_pagamento.text
-        
-        arquivo = open('C:/Users/noteb/Desktop/Pizzaria_Kivy/arquivos/valorTotalDoPedido.txt', 'r')
-        leia_me = (arquivo.readline())
-        valorTotal_Pedido = leia_me[0]
-        arquivo.close()
+        if horario_Pedido >= horarioQuePizzariaComecaReceberPedidos and horario_Pedido <= horarioQuePizzariaParaDeReceberPedidos:
+            if self.enderecoParaEntregaDoPedido.text != "" and self.numeroParaEntregaDoPedido.text != "" and self.bairroParaEntregaDoPedido.text != "" and self.telefoneParaContato.text != "":
+                verificaTelefone = Verificar_telefone.check(self.telefoneParaContato.text)
+                if verificaTelefone == 0:
+                    if self.forma_de_pagamento.text != "Selecione a forma de pagamento" and (self.forma_de_pagamento.text == "Cartão de Credito" or self.forma_de_pagamento.text == "Cartão de Debito" or self.forma_de_pagamento.text == "Pix"):
+                        if quantidadeDeCaracteres >= 3:
+                            link = f"https://viacep.com.br/ws/MG/Ituiutaba/{self.enderecoParaEntregaDoPedido.text}/json/"
+                            endereco = requests.get(link)
+                            resultado_endereco = endereco.json()
+                            resultado_endereco = str(resultado_endereco)
+                            if resultado_endereco != '[]':
+                                data_Pedido = datetime.today().strftime('%Y-%m-%d')
+                                horario_Pedido = datetime.today().strftime('%H:%M:%S')
 
-        arquivo = open('C:/Users/noteb/Desktop/Pizzaria_Kivy/arquivos/email.txt', 'r')
-        leia_me = (arquivo.readlines())
-        email = leia_me[0]
-        print(email)
-        arquivo.close()
-        Contas_id_Pedido = bancoDeDados.procurar_id(email)
+                                arquivo = open('./telefone.txt', 'w')
+                                arquivo.write(self.ids.telefoneParaContato.text)
+                                arquivo.close()
 
-        arquivo = open('C:/Users/noteb/Desktop/Pizzaria_Kivy/arquivos/valorTotalDoPedido.txt', 'r')
-        print(arquivo.readline())
-        arquivo.close()
+                                arquivo = open('./telefone.txt', 'r')
+                                leia_me = (arquivo.readline())
+                                telefone_Pedido = leia_me
+                                arquivo.close()
 
-        file = open("C:/Users/noteb/Desktop/Pizzaria_Kivy/arquivos/quantidadeDePizzas.txt", "r") 
-        leia = file.readlines()
-        pizza_Ads_Pedido = leia[0]
-        pizza_Baiana_Pedido = leia[1]
-        pizza_Bolonhesa_Pedido = leia[2]
-        pizza_Calabresa_Pedido = leia[3]
-        pizza_FrangoComCatupiry_Pedido = leia[4]
-        pizza_Ituiutaba_Pedido = leia[5]
-        pizza_Mucarela_Pedido = leia[6]
-        pizza_QuatroQueijos_Pedido = leia[7]
-        pizza_TresQueijos_Pedido = leia[8]
-        pizza_Brocolis_Pedido = leia[9]
-        pizza_Champignon_Pedido = leia[10]
-        pizza_CincoQueijos_Pedido = leia[11]
-        pizza_Salaminho_Pedido = leia[12]
-        pizza_Vegetariana_Pedido = leia[13]
-        pizza_Acai_Pedido = leia[14]
-        pizza_Banana_Pedido = leia[15]
-        pizza_Brigadeiro_Pedido = leia[16]
-        pizza_Prestigio_Pedido = leia[17]
-        pizza_RomeuAndJulieta_Pedido = leia[18]
-        file.close()
+                                endereco_Pedido = self.ids.enderecoParaEntregaDoPedido.text
+                                formaDePagamento_Pedido = self.ids.forma_de_pagamento.text
 
-        bancoDeDados.insert_table_Pedidos(
-            data_Pedido, 
-            horario_Pedido, 
-            telefone_Pedido, 
-            endereco_Pedido, 
-            formaDePagamento_Pedido, 
-            valorTotal_Pedido, 
-            Contas_id_Pedido, 
-            pizza_Ads_Pedido, 
-            pizza_Baiana_Pedido, 
-            pizza_Bolonhesa_Pedido, 
-            pizza_Calabresa_Pedido, 
-            pizza_FrangoComCatupiry_Pedido, 
-            pizza_Ituiutaba_Pedido, 
-            pizza_Mucarela_Pedido, 
-            pizza_QuatroQueijos_Pedido, 
-            pizza_TresQueijos_Pedido, 
-            pizza_Brocolis_Pedido, 
-            pizza_Champignon_Pedido, 
-            pizza_CincoQueijos_Pedido, 
-            pizza_Salaminho_Pedido, 
-            pizza_Vegetariana_Pedido, 
-            pizza_Acai_Pedido, 
-            pizza_Banana_Pedido, 
-            pizza_Brigadeiro_Pedido, 
-            pizza_Prestigio_Pedido, 
-            pizza_RomeuAndJulieta_Pedido)
+                                arquivo = open('./valorTotalDoPedido.txt', 'r')
+                                leia_me = (arquivo.readline())
+                                valorTotal_Pedido = leia_me
+                                arquivo.close()
 
+                                arquivo = open('./email.txt', 'r')
+                                leia_me = (arquivo.readlines())
+                                email = leia_me[0]
+                                arquivo.close()
+                                Contas_id_Pedido = bancoDeDados.search_account_id(email)
 
+                                file = open("./quantidadeDePizzas.txt", "r") 
+                                leia = file.readlines()
+                                pizza_Ads_Pedido = leia[0]
+                                pizza_Baiana_Pedido = leia[1]
+                                pizza_Bolonhesa_Pedido = leia[2]
+                                pizza_Calabresa_Pedido = leia[3]
+                                pizza_FrangoComCatupiry_Pedido = leia[4]
+                                pizza_Ituiutaba_Pedido = leia[5]
+                                pizza_Mucarela_Pedido = leia[6]
+                                pizza_QuatroQueijos_Pedido = leia[7]
+                                pizza_TresQueijos_Pedido = leia[8]
+                                pizza_Brocolis_Pedido = leia[9]
+                                pizza_Champignon_Pedido = leia[10]
+                                pizza_CincoQueijos_Pedido = leia[11]
+                                pizza_Salaminho_Pedido = leia[12]
+                                pizza_Vegetariana_Pedido = leia[13]
+                                pizza_Acai_Pedido = leia[14]
+                                pizza_Banana_Pedido = leia[15]
+                                pizza_Brigadeiro_Pedido = leia[16]
+                                pizza_Prestigio_Pedido = leia[17]
+                                pizza_RomeuAndJulieta_Pedido = leia[18]
+                                file.close()
+
+                                bancoDeDados.insert_table_Pedidos(
+                                    data_Pedido, 
+                                    horario_Pedido, 
+                                    telefone_Pedido, 
+                                    endereco_Pedido, 
+                                    formaDePagamento_Pedido, 
+                                    valorTotal_Pedido, 
+                                    Contas_id_Pedido, 
+                                    pizza_Ads_Pedido, 
+                                    pizza_Baiana_Pedido, 
+                                    pizza_Bolonhesa_Pedido, 
+                                    pizza_Calabresa_Pedido, 
+                                    pizza_FrangoComCatupiry_Pedido, 
+                                    pizza_Ituiutaba_Pedido, 
+                                    pizza_Mucarela_Pedido, 
+                                    pizza_QuatroQueijos_Pedido, 
+                                    pizza_TresQueijos_Pedido, 
+                                    pizza_Brocolis_Pedido, 
+                                    pizza_Champignon_Pedido, 
+                                    pizza_CincoQueijos_Pedido, 
+                                    pizza_Salaminho_Pedido, 
+                                    pizza_Vegetariana_Pedido, 
+                                    pizza_Acai_Pedido, 
+                                    pizza_Banana_Pedido, 
+                                    pizza_Brigadeiro_Pedido, 
+                                    pizza_Prestigio_Pedido, 
+                                    pizza_RomeuAndJulieta_Pedido
+                                )
+                                Popup_PedidoRealizadoComSucesso.popFun()
+                                limparCamposFinalizarPedido()
+                            else:
+                                Popup_EnderecoNaoEncontrado.popFun()
+                        else:
+                            Popup_EnderecoNaoEncontrado.popFun()
+                    else:
+                        Popup_FormaDePagamentoNaoDefinida.popFun()
+                else:
+                    Popup_NumeroInvalido.popFun()
+            else:
+                Popup_CampoVazio.popFun()
+        else:
+            Popup_ForaHorarioDePedido.popFun() 
+
+    def limparCamposFinalizarPedido(self):
+        self.ids.enderecoParaEntregaDoPedido.text = ''
+        self.ids.numeroParaEntregaDoPedido.text = ''
+        self.ids.bairroParaEntregaDoPedido.text = ''
+        self.ids.telefoneParaContato.text = ''
+        self.ids.forma_de_pagamento.text = 'Selecione a forma de pagamento'
+
+class Popup_CampoVazio(Screen):
+    popupWindow = None
+    
+    def popFun():
+        show = Popup_CampoVazio()
+        Popup_CampoVazio.popupWindow = Popup(
+                              title = "Popup", 
+                              content = show, 
+                              size_hint = (None, None), 
+                              size = (400, 200), 
+                              auto_dismiss=False, 
+                              title_size = 16,
+                              background_color=(22/255, 184/255, 243/255, 1)
+                             )
+        Popup_CampoVazio.popupWindow.open()
+
+class Popup_EmailInvalido(Screen):
+    popupWindow = None
+    
+    def popFun():
+        show = Popup_EmailInvalido()
+        Popup_EmailInvalido.popupWindow = Popup(
+                              title = "Popup", 
+                              content = show, 
+                              size_hint = (None, None), 
+                              size = (400, 200), 
+                              auto_dismiss=False, 
+                              title_size = 16,
+                              background_color=(22/255, 184/255, 243/255, 1)
+                             )
+        Popup_EmailInvalido.popupWindow.open()
+
+class Popup_EmailOuSenhaIncorreto(Screen):
+    popupWindow = None
+    
+    def popFun():
+        show = Popup_EmailOuSenhaIncorreto()
+        Popup_EmailOuSenhaIncorreto.popupWindow = Popup(
+                              title = "Popup", 
+                              content = show, 
+                              size_hint = (None, None), 
+                              size = (400, 200), 
+                              auto_dismiss=False, 
+                              title_size = 16,
+                              background_color=(22/255, 184/255, 243/255, 1)
+                             )
+        Popup_EmailOuSenhaIncorreto.popupWindow.open()
+
+class Popup_ContaDesativada(Screen):
+    popupWindow = None
+    
+    def popFun():
+        show = Popup_ContaDesativada()
+        Popup_ContaDesativada.popupWindow = Popup(
+                              title = "Popup", 
+                              content = show, 
+                              size_hint = (None, None), 
+                              size = (400, 200), 
+                              auto_dismiss=False, 
+                              title_size = 16,
+                              background_color=(22/255, 184/255, 243/255, 1)
+                             )
+        Popup_ContaDesativada.popupWindow.open()
+
+class Popup_CadastroRealizadoComSucesso(Screen):
+    popupWindow = None
+    
+    def popFun():
+        show = Popup_CadastroRealizadoComSucesso()
+        Popup_CadastroRealizadoComSucesso.popupWindow = Popup(
+                              title = "Popup", 
+                              content = show, 
+                              size_hint = (None, None), 
+                              size = (400, 200), 
+                              auto_dismiss=False, 
+                              title_size = 16,
+                              background_color=(22/255, 184/255, 243/255, 1)
+                             )
+        Popup_CadastroRealizadoComSucesso.popupWindow.open()
+
+class Popup_LimiteDeCarateresNaSenha(Screen):
+    popupWindow = None
+    
+    def popFun():
+        show = Popup_LimiteDeCarateresNaSenha()
+        Popup_LimiteDeCarateresNaSenha.popupWindow = Popup(
+                              title = "Popup", 
+                              content = show, 
+                              size_hint = (None, None), 
+                              size = (400, 200), 
+                              auto_dismiss=False, 
+                              title_size = 16,
+                              background_color=(22/255, 184/255, 243/255, 1)
+                             )
+        Popup_LimiteDeCarateresNaSenha.popupWindow.open()
+
+class Popup_SenhasDiferentes(Screen):
+    popupWindow = None
+    
+    def popFun():
+        show = Popup_SenhasDiferentes()
+        Popup_SenhasDiferentes.popupWindow = Popup(
+                              title = "Popup", 
+                              content = show, 
+                              size_hint = (None, None), 
+                              size = (400, 200), 
+                              auto_dismiss=False, 
+                              title_size = 16,
+                              background_color=(22/255, 184/255, 243/255, 1)
+                             )
+        Popup_SenhasDiferentes.popupWindow.open()
+
+class Popup_EmailJaExiste(Screen):
+    popupWindow = None
+    
+    def popFun():
+        show = Popup_EmailJaExiste()
+        Popup_EmailJaExiste.popupWindow = Popup(
+                              title = "Popup", 
+                              content = show, 
+                              size_hint = (None, None), 
+                              size = (400, 200), 
+                              auto_dismiss=False, 
+                              title_size = 16,
+                              background_color=(22/255, 184/255, 243/255, 1)
+                             )
+        Popup_EmailJaExiste.popupWindow.open()
+
+class Popup_ErroInesperado(Screen):
+    popupWindow = None
+    
+    def popFun():
+        show = Popup_ErroInesperado()
+        Popup_ErroInesperado.popupWindow = Popup(
+                              title = "Popup", 
+                              content = show, 
+                              size_hint = (None, None), 
+                              size = (400, 200), 
+                              auto_dismiss=False, 
+                              title_size = 16,
+                              background_color=(22/255, 184/255, 243/255, 1)
+                             )
+        Popup_ErroInesperado.popupWindow.open()
+
+class Popup_LimiteMaximoPorPizza(Screen):
+    popupWindow = None
+    
+    def popFun():
+        show = Popup_LimiteMaximoPorPizza()
+        Popup_LimiteMaximoPorPizza.popupWindow = Popup(
+                              title = "Popup", 
+                              content = show, 
+                              size_hint = (None, None), 
+                              size = (400, 200), 
+                              auto_dismiss=False, 
+                              title_size = 16,
+                              background_color=(22/255, 184/255, 243/255, 1)
+                             )
+        Popup_LimiteMaximoPorPizza.popupWindow.open()
+
+class Popup_ForaHorarioDePedido(Screen):
+    popupWindow = None
+    
+    def popFun():
+        show = Popup_ForaHorarioDePedido()
+        Popup_ForaHorarioDePedido.popupWindow = Popup(
+                              title = "Popup", 
+                              content = show, 
+                              size_hint = (None, None), 
+                              size = (400, 200), 
+                              auto_dismiss=False, 
+                              title_size = 16,
+                              background_color=(22/255, 184/255, 243/255, 1)
+                             )
+        Popup_ForaHorarioDePedido.popupWindow.open()
+
+class Popup_NumeroInvalido(Screen):
+    popupWindow = None
+    
+    def popFun():
+        show = Popup_NumeroInvalido()
+        Popup_NumeroInvalido.popupWindow = Popup(
+                              title = "Popup", 
+                              content = show, 
+                              size_hint = (None, None), 
+                              size = (400, 200), 
+                              auto_dismiss=False, 
+                              title_size = 16,
+                              background_color=(22/255, 184/255, 243/255, 1)
+                             )
+        Popup_NumeroInvalido.popupWindow.open()
+
+class Popup_FormaDePagamentoNaoDefinida(Screen):
+    popupWindow = None
+    
+    def popFun():
+        show = Popup_FormaDePagamentoNaoDefinida()
+        Popup_FormaDePagamentoNaoDefinida.popupWindow = Popup(
+                              title = "Popup", 
+                              content = show, 
+                              size_hint = (None, None), 
+                              size = (400, 200), 
+                              auto_dismiss=False, 
+                              title_size = 16,
+                              background_color=(22/255, 184/255, 243/255, 1)
+                             )
+        Popup_FormaDePagamentoNaoDefinida.popupWindow.open()
+
+class Popup_EnderecoNaoEncontrado(Screen):
+    popupWindow = None
+    
+    def popFun():
+        show = Popup_EnderecoNaoEncontrado()
+        Popup_EnderecoNaoEncontrado.popupWindow = Popup(
+                              title = "Popup", 
+                              content = show, 
+                              size_hint = (None, None), 
+                              size = (400, 200), 
+                              auto_dismiss=False, 
+                              title_size = 16,
+                              background_color=(22/255, 184/255, 243/255, 1)
+                             )
+        Popup_EnderecoNaoEncontrado.popupWindow.open()
+    
+class Popup_PedidoRealizadoComSucesso(Screen):
+    popupWindow = None
+    
+    def popFun():
+        show = Popup_PedidoRealizadoComSucesso()
+        Popup_PedidoRealizadoComSucesso.popupWindow = Popup(
+                              title = "Popup", 
+                              content = show, 
+                              size_hint = (None, None), 
+                              size = (400, 200), 
+                              auto_dismiss=False, 
+                              title_size = 16,
+                              background_color=(22/255, 184/255, 243/255, 1)
+                             )
+        Popup_PedidoRealizadoComSucesso.popupWindow.open()
+    
+# Arquivo de carregamento do construtor    
+kv = Builder.load_file('app_kivy_pizzaria.kv')
+kv = Builder.load_file('popup.kv')
+gerenciadorDeJanelas = windowManager()
+
+# Adicionando telas
+gerenciadorDeJanelas.add_widget(Login(name='login'))
+gerenciadorDeJanelas.add_widget(Cadastrar(name='cadastrar'))
+gerenciadorDeJanelas.add_widget(Menu(name='menu'))
+gerenciadorDeJanelas.add_widget(Pedido(name='pedido'))
+gerenciadorDeJanelas.add_widget(Finalizar_Pedido(name='finalizar_pedido'))
 
 class app_kivy_pizzaria(App):
     def build(self):
-        return Gerente_das_telas()
+        return gerenciadorDeJanelas
 
-    def notificando(self):
-        return plyer.notification.notify(title='app_kivy_pizzaria', message="O app_kivy_pizzaria está em execução")
-
-
-
-if __name__ == '__main__':
-    app_kivy_pizzaria().notificando()
-    app_kivy_pizzaria().run()
-    
+if __name__ == "__main__": 
+	app_kivy_pizzaria().run()
