@@ -1,0 +1,301 @@
+<Popup_CampoVazio>:
+    BoxLayout:
+        orientation:'vertical'
+        size_hint_y: None
+        height: 150
+        padding: 0
+        spacing: 0    
+    	
+        Label:
+    		text : "Preencher todos os campos"
+            font_size: 18
+
+        Button:
+            text: 'Fechar'
+            font_size: 16
+            height: self.height
+            background_color: 255/255, 0/255, 0/255, 1
+            color: 255/255, 255/255, 255/255, 1
+            on_release: root.popupWindow.dismiss()
+
+<Popup_EmailInvalido>:
+    BoxLayout:
+        orientation:'vertical'
+        size_hint_y: None
+        height: 150
+        padding: 0
+        spacing: 0    
+        
+        Label:
+            text : "Formato de email invalido"
+            font_size: 18
+
+        Button:
+            text: 'Fechar'
+            font_size: 16
+            height: self.height
+            background_color: 255/255, 0/255, 0/255, 1
+            color: 255/255, 255/255, 255/255, 1
+            on_release: root.popupWindow.dismiss()
+
+<Popup_EmailOuSenhaIncorreto>:
+    BoxLayout:
+        orientation:'vertical'
+        size_hint_y: None
+        height: 150
+        padding: 0
+        spacing: 0    
+        
+        Label:
+            text : "Email ou Senha incorreto"
+            font_size: 18
+
+        Button:
+            text: 'Fechar'
+            font_size: 16
+            height: self.height
+            background_color: 255/255, 0/255, 0/255, 1
+            color: 255/255, 255/255, 255/255, 1
+            on_release: root.popupWindow.dismiss()
+
+<Popup_ContaDesativada>:
+    BoxLayout:
+        orientation:'vertical'
+        size_hint_y: None
+        height: 150
+        padding: 0
+        spacing: 0    
+        
+        Label:
+            text : "Conta desativada"
+            font_size: 18
+
+        Button:
+            text: 'Fechar'
+            font_size: 16
+            height: self.height
+            background_color: 255/255, 0/255, 0/255, 1
+            color: 255/255, 255/255, 255/255, 1
+            on_release: root.popupWindow.dismiss()
+
+<Popup_CadastroRealizadoComSucesso>:
+    BoxLayout:
+        orientation:'vertical'
+        size_hint_y: None
+        height: 150
+        padding: 0
+        spacing: 0    
+        
+        Label:
+            text : "O cadastro foi realizado com sucesso"
+            font_size: 18
+
+        Button:
+            text: 'Ir para a tela de Login'
+            font_size: 16
+            height: self.height
+            background_color: 255/255, 0/255, 0/255, 1
+            color: 255/255, 255/255, 255/255, 1
+            on_release: root.popupWindow.dismiss()
+            on_press: app.root.current = 'login'
+
+<Popup_LimiteDeCarateresNaSenha>:
+    BoxLayout:
+        orientation:'vertical'
+        size_hint_y: None
+        height: 150
+        padding: 0
+        spacing: 0    
+        
+        Label:
+            text : "Senha deve ter de 6 a 20 caracteres"
+            font_size: 18
+
+        Button:
+            text: 'Fechar'
+            font_size: 16
+            height: self.height
+            background_color: 255/255, 0/255, 0/255, 1
+            color: 255/255, 255/255, 255/255, 1
+            on_release: root.popupWindow.dismiss()
+
+<Popup_SenhasDiferentes>:
+    BoxLayout:
+        orientation:'vertical'
+        size_hint_y: None
+        height: 150
+        padding: 0
+        spacing: 0    
+        
+        Label:
+            text : "Senhas não identicas"
+            font_size: 18
+
+        Button:
+            text: 'Fechar'
+            font_size: 16
+            height: self.height
+            background_color: 255/255, 0/255, 0/255, 1
+            color: 255/255, 255/255, 255/255, 1
+            on_release: root.popupWindow.dismiss()
+
+<Popup_EmailJaExiste>:
+    BoxLayout:
+        orientation:'vertical'
+        size_hint_y: None
+        height: 150
+        padding: 0
+        spacing: 0    
+        
+        Label:
+            text : "Já existe uma conta com esse email"
+            font_size: 18
+
+        Button:
+            text: 'Fechar'
+            font_size: 16
+            height: self.height
+            background_color: 255/255, 0/255, 0/255, 1
+            color: 255/255, 255/255, 255/255, 1
+            on_release: root.popupWindow.dismiss()
+
+<Popup_ErroInesperado>:
+    BoxLayout:
+        orientation:'vertical'
+        size_hint_y: None
+        height: 150
+        padding: 0
+        spacing: 0    
+        
+        Label:
+            text : "Aconteceu um erro inesperado. Tente novamente"
+            font_size: 18
+
+        Button:
+            text: 'Fechar'
+            font_size: 16
+            height: self.height
+            background_color: 255/255, 0/255, 0/255, 1
+            color: 255/255, 255/255, 255/255, 1
+            on_release: root.popupWindow.dismiss()
+
+<Popup_LimiteMaximoPorPizza>:
+    BoxLayout:
+        orientation:'vertical'
+        size_hint_y: None
+        height: 150
+        padding: 0
+        spacing: 0    
+        
+        Label:
+            text : "O limite maximo por pizza são 10 unidades"
+            font_size: 18
+
+        Button:
+            text: 'Fechar'
+            font_size: 16
+            height: self.height
+            background_color: 255/255, 0/255, 0/255, 1
+            color: 255/255, 255/255, 255/255, 1
+            on_release: root.popupWindow.dismiss()
+
+<Popup_ForaHorarioDePedido>:
+    BoxLayout:
+        orientation:'vertical'
+        size_hint_y: None
+        height: 150
+        padding: 0
+        spacing: 0    
+        
+        Label:
+            text : "Só pode realizar pedidos das 19:00 as 23:00"
+            font_size: 18
+
+        Button:
+            text: 'Fechar'
+            font_size: 16
+            height: self.height
+            background_color: 255/255, 0/255, 0/255, 1
+            color: 255/255, 255/255, 255/255, 1
+            on_release: root.popupWindow.dismiss()
+
+<Popup_NumeroInvalido>:
+    BoxLayout:
+        orientation:'vertical'
+        size_hint_y: None
+        height: 150
+        padding: 0
+        spacing: 0    
+        
+        Label:
+            text : "Numero de telefone invalido"
+            font_size: 18
+
+        Button:
+            text: 'Fechar'
+            font_size: 16
+            height: self.height
+            background_color: 255/255, 0/255, 0/255, 1
+            color: 255/255, 255/255, 255/255, 1
+            on_release: root.popupWindow.dismiss()
+
+<Popup_FormaDePagamentoNaoDefinida>:
+    BoxLayout:
+        orientation:'vertical'
+        size_hint_y: None
+        height: 150
+        padding: 0
+        spacing: 0    
+        
+        Label:
+            text : "Forma de Pagamento não selecionada"
+            font_size: 18
+
+        Button:
+            text: 'Fechar'
+            font_size: 16
+            height: self.height
+            background_color: 255/255, 0/255, 0/255, 1
+            color: 255/255, 255/255, 255/255, 1
+            on_release: root.popupWindow.dismiss()
+
+<Popup_EnderecoNaoEncontrado>:
+    BoxLayout:
+        orientation:'vertical'
+        size_hint_y: None
+        height: 150
+        padding: 0
+        spacing: 0    
+        
+        Label:
+            text : "Não encontramos esse endereço"
+            font_size: 18
+
+        Button:
+            text: 'Fechar'
+            font_size: 16
+            height: self.height
+            background_color: 255/255, 0/255, 0/255, 1
+            color: 255/255, 255/255, 255/255, 1
+            on_release: root.popupWindow.dismiss()
+
+<Popup_PedidoRealizadoComSucesso>:
+    BoxLayout:
+        orientation:'vertical'
+        size_hint_y: None
+        height: 150
+        padding: 0
+        spacing: 0    
+        
+        Label:
+            text : "Pedido realizado com sucesso"
+            font_size: 18
+
+        Button:
+            text: 'Fechar'
+            font_size: 16
+            height: self.height
+            background_color: 255/255, 0/255, 0/255, 1
+            color: 255/255, 255/255, 255/255, 1
+            on_release: root.popupWindow.dismiss()
+            on_press: app.root.current = 'menu'

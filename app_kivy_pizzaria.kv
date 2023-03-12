@@ -1,122 +1,144 @@
-<Gerente_das_telas>:
+windowManager:
     Login:
-        name: 'login'
     Cadastrar:
-        name: 'cadastrar'
     Menu:
-        name: 'menu'
     Pedido:
-        name: 'pedido'
     Finalizar_Pedido:
-        name: 'finalizar_pedido'
 
 <Login>:
+	email : email
+	senha : senha
     BoxLayout:
         orientation: 'vertical'
-        padding: 0
-        spacing: 0
+        padding: 20
+        spacing: 20
 
         Image:
             source: "./imgs/pizzaLogo.png"
-            allow_stretch: False
             size_hint_y: None
             height: 150
 
         GridLayout:
             cols: 2
-            spacing: 0
+            padding: 20
 
             Label:
                 # id:
                 text: "E-mail"
             TextInput:
-                id: log
-                font_size: 30
-                multiline:False # Apenas uma linha é permitida
-                write_tab: False # Não pode apertar tap e dar varios espaços, não mais
+                id: email
+                font_size: 18
+                multiline:False 
+                write_tab: False 
             Label:
                 # id:
                 text: "Senha"
             TextInput:
-                id: sen
-                font_size: 30
+                id: senha
+                font_size: 18
                 password: True
+                multiline:False 
+                write_tab: False 
 
         Button:
             text: 'Login'
-            on_release: root.teste_integrarLogin()
-            on_release: app.root.current = 'menu'
+            on_release: root.validar()
         Button:
             text: 'Cadastrar'
             on_release: app.root.current = 'cadastrar'
+            on_press: root.limparCamposLogin()
 
 <Cadastrar>:
+	nome: nome
+	sobrenome: sobrenome
+	email: email
+	senha: senha
+    confirmarSenha: confirmarSenha
+
     BoxLayout:
         orientation: 'vertical'
-        padding: 0
-        spacing: 0
+        padding: 20
+        spacing: 20
 
         Image:
             source: "./imgs/pizzaLogo.png"
             allow_stretch: False
             size_hint_y: None
-            height: 150
+            height: 100
 
         GridLayout:
             cols: 2
-            spacing: 0
+            padding: 20
 
             Label:
                 # id:
                 text: "Nome"
             TextInput:
                 id: nome
-                font_size: 30
+                font_size: 18
+                multiline:False 
+                write_tab: False 
             Label:
                 # id:
                 text: "Sobrenome"
             TextInput:
                 id: sobrenome
-                font_size: 30
+                font_size: 18
+                multiline:False 
+                write_tab: False 
             Label:
                 # id:
                 text: "Email"
             TextInput:
                 id: email
-                font_size: 30
+                font_size: 18
+                multiline:False 
+                write_tab: False 
             Label:
                 # id:
                 text: "Senha"
             TextInput:
                 id: senha
-                font_size: 30
+                font_size: 18
+                multiline:False 
+                write_tab: False 
+                password: True
+            Label:
+                # id:
+                text: "Confirmar senha"
+            TextInput:
+                id: confirmarSenha
+                font_size: 18
+                multiline:False 
+                write_tab: False 
+                password: True
 
-        Button:
-            text: 'Cadastrar'
-            # on_release: root.teste_integrarCadastro()
-            on_release: app.root.current = 'login'
-        Button:
-            text: 'Voltar'
-            on_release: app.root.current = 'login'
+        BoxLayout:
+            orientation: 'vertical'
+            padding: 20
+            spacing: 20
+            Button:
+                text: 'Cadastrar'
+                on_release: root.validar()
+            Button:
+                text: 'Voltar'
+                on_release: app.root.current = 'login'
+                on_press: root.limparCamposCadastro()
 
 <Menu>:
     BoxLayout:
         orientation: 'vertical'
-        padding: 0
-        spacing: 0
+        padding: 40
+        spacing: 40
 
         Image:
             source: "./imgs/pizzaLogo.png"
-            allow_stretch: False
             size_hint_y: None
             height: 150
 
         Button:
             text: 'Fazer Pedido'
             on_release: app.root.current = 'pedido'
-        # Button:
-            # text: 'Desativar Conta'
-            # on_release: app.root.current = 
         Button:
             text: 'Sair'
             on_release: app.stop()
@@ -124,64 +146,98 @@
 <Pedido>:
     BoxLayout:
         orientation: 'vertical'
-        padding: 0
-        spacing: 0
+        padding: 10
+        spacing: 5
+
+        BoxLayout:
+            orientation:'vertical'
+            size_hint_y: None
+            height: 50
+            padding: 10
+            spacing: 5
+
+            Label:
+                # id:
+                text: "Sabores de Pizza"
+                font_size: 30
+                bold: True
+                color: 128/255, 128/255, 128/255, 1
 
         ScrollView:
             BoxLayout:
                 orientation:'vertical'
                 size_hint_y: None
                 height: self.minimum_height
-                padding: 0
-                spacing: 0
+                padding: 5
+                spacing: 5
 
-                # Titulo da Categoria dessas Pizzas
                 BoxLayout:
+                    canvas:
+                        Color:
+                            rgb: 128/255, 128/255, 128/255
+                        Rectangle:
+                            size: self.size
+                            pos:self.pos
+
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
-                    spacing: 0
+                    height: 50
+                    padding: 10
+                    spacing: 10
 
                     Label:
                         # id:
                         text: "PIZZAS TRADICIONAIS"
+                        font_size: 25
 
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
+                    height: 300
+                    padding: 10
                     spacing: 0
 
                     Label:
                         # id:
                         text: "Ads"
+                        font_size: 20
                     Label:
                         # id:
-                        text: "Muçarela, Presunto, Calabresa, Rodelas de Tomate, Cebola, Pimentão, Milho e Azeitonas."
+                        text: "Muçarela, Presunto, Calabresa, Rodelas de Tomate, Cebola, "
+                        font_size: 18
+                    Label:
+                        # id:
+                        text: "Pimentão, Milho e Azeitonas."
+                        font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Preço R$"
+                            font_size: 18
                         Label:
                             id: valor_Ads
-                            text: "3.00"
+                            text: "10.00"
+                            font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Quantidade:"
+                            font_size: 18
                         Label:
                             id: quantidade_Ads
                             text: "0"
+                            font_size: 18
+                            bold: True     
 
                     GridLayout:
                         cols: 2
@@ -197,38 +253,51 @@
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
+                    height: 300
+                    padding: 10
                     spacing: 0
 
                     Label:
                         # id:
                         text: "Baiana"
+                        font_size: 20
                     Label:
                         # id:
                         text: "Muçarela, Calabresa e Pimenta Calabresa."
+                        font_size: 18
+                    Label:
+                        # id:
+                        text: ""
+                        font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Preço R$"
+                            font_size: 18
                         Label:
                             id: valor_Baiana
                             text: "10.00"
+                            font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Quantidade:"
+                            font_size: 18
                         Label:
                             id: quantidade_Baiana
                             text: "0"
+                            font_size: 18
+                            bold: True     
 
                     GridLayout:
                         cols: 2
@@ -244,38 +313,51 @@
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
+                    height: 300
+                    padding: 10
                     spacing: 0
 
                     Label:
                         # id:
                         text: "Bolonhesa"
+                        font_size: 20
                     Label:
                         # id:
                         text: "Muçarela e molho à bolonhesa."
+                        font_size: 18
+                    Label:
+                        # id:
+                        text: ""
+                        font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Preço R$"
+                            font_size: 18
                         Label:
                             id: valor_Bolonhesa
                             text: "10.00"
+                            font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Quantidade:"
+                            font_size: 18
                         Label:
                             id: quantidade_Bolonhesa
                             text: "0"
+                            font_size: 18
+                            bold: True     
 
                     GridLayout:
                         cols: 2
@@ -291,38 +373,51 @@
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
+                    height: 300
+                    padding: 10
                     spacing: 0
 
                     Label:
                         # id:
                         text: "Calabresa"
+                        font_size: 20
                     Label:
                         # id:
                         text: "Muçarela, Calabresa e Azeitonas."
+                        font_size: 18
+                    Label:
+                        # id:
+                        text: ""
+                        font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Preço R$"
+                            font_size: 18
                         Label:
                             id: valor_Calabresa
                             text: "10.00"
+                            font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Quantidade:"
+                            font_size: 18
                         Label:
                             id: quantidade_Calabresa
                             text: "0"
+                            font_size: 18
+                            bold: True     
 
                     GridLayout:
                         cols: 2
@@ -338,38 +433,51 @@
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
+                    height: 300
+                    padding: 10
                     spacing: 0
 
                     Label:
                         # id:
                         text: "Frango com Catupiry"
+                        font_size: 20
                     Label:
                         # id:
-                        text: "Muçarela, Frango Desfiado, Milho Verde, Azeitonas, Rodelas de Tomate e Catupiry."
+                        text: "Muçarela, Frango Desfiado, Milho Verde, Azeitonas, "
+                        font_size: 18
+                    Label:
+                        # id:
+                        text: "Rodelas de Tomate e Catupiry."
+                        font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Preço R$"
+                            font_size: 18
                         Label:
                             id: valor_FrangoComCatupiry
                             text: "10.00"
+                            font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Quantidade:"
+                            font_size: 18
                         Label:
                             id: quantidade_FrangoComCatupiry
                             text: "0"
+                            font_size: 18
+                            bold: True     
 
                     GridLayout:
                         cols: 2
@@ -385,39 +493,51 @@
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
+                    height: 300
+                    padding: 10
                     spacing: 0
 
                     Label:
                         # id:
                         text: "Ituiutaba"
+                        font_size: 20
                     Label:
                         # id:
-                        text: "Muçarela, Presunto, Frango Desfiado, Calabresa, Azeitonas, Pimentão, Cebola, Bacon, Rodelas de Tomate e Milho Verde."
-
+                        text: "Muçarela, Presunto, Frango Desfiado, Calabresa, Azeitonas, "
+                        font_size: 18
+                    Label:
+                        # id:
+                        text: "Pimentão, Cebola, Bacon, Rodelas de Tomate e Milho Verde."
+                        font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Preço R$"
+                            font_size: 18
                         Label:
                             id: valor_Ituiutaba
                             text: "10.00"
+                            font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Quantidade:"
+                            font_size: 18
                         Label:
                             id: quantidade_Ituiutaba
                             text: "0"
+                            font_size: 18
+                            bold: True     
 
                     GridLayout:
                         cols: 2
@@ -433,38 +553,51 @@
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
+                    height: 300
+                    padding: 10
                     spacing: 0
 
                     Label:
                         # id:
                         text: "Muçarela"
+                        font_size: 20
                     Label:
                         # id:
                         text: "Muçarela, Rodelas de Tomate, Azeitonas e Orégano."
+                        font_size: 18
+                    Label:
+                        # id:
+                        text: ""
+                        font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Preço R$"
+                            font_size: 18
                         Label:
                             id: valor_Mucarela
                             text: "10.00"
+                            font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Quantidade:"
+                            font_size: 18
                         Label:
                             id: quantidade_Mucarela
                             text: "0"
+                            font_size: 18
+                            bold: True     
 
                     GridLayout:
                         cols: 2
@@ -480,38 +613,51 @@
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
+                    height: 300
+                    padding: 10
                     spacing: 0
 
                     Label:
                         # id:
                         text: "Quatro Queijos"
+                        font_size: 20
                     Label:
                         # id:
                         text: "Muçarela, Provolone, Parmesão e Catupiry."
+                        font_size: 18
+                    Label:
+                        # id:
+                        text: ""
+                        font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Preço R$"
+                            font_size: 18
                         Label:
                             id: valor_QuatroQueijos
                             text: "10.00"
+                            font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Quantidade:"
+                            font_size: 18
                         Label:
                             id: quantidade_QuatroQueijos
                             text: "0"
+                            font_size: 18
+                            bold: True     
 
                     GridLayout:
                         cols: 2
@@ -527,38 +673,51 @@
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
+                    height: 300
+                    padding: 10
                     spacing: 0
 
                     Label:
                         # id:
                         text: "Três Queijos"
+                        font_size: 20
                     Label:
                         # id:
                         text: "Muçarela, Provolone e Catupiry."
+                        font_size: 18
+                    Label:
+                        # id:
+                        text: ""
+                        font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Preço R$"
+                            font_size: 18
                         Label:
                             id: valor_TresQueijos
                             text: "10.00"
+                            font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Quantidade:"
+                            font_size: 18
                         Label:
                             id: quantidade_TresQueijos
                             text: "0"
+                            font_size: 18
+                            bold: True     
 
                     GridLayout:
                         cols: 2
@@ -570,54 +729,74 @@
                         Button:
                             text: '-'
                             on_release: root.decrementar_TresQueijos()
-
-                # Titulo da Categoria dessas Pizzas
+                                                    
                 BoxLayout:
+                    canvas:
+                        Color:
+                            rgb: 128/255, 128/255, 128/255
+                        Rectangle:
+                            size: self.size
+                            pos:self.pos
+
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
-                    spacing: 0
+                    height: 50
+                    padding: 10
+                    spacing: 10
 
                     Label:
                         # id:
                         text: "PIZZAS ESPECIAIS"
+                        font_size: 25           
 
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
+                    height: 300
+                    padding: 10
                     spacing: 0
 
                     Label:
                         # id:
                         text: "Brócolis"
+                        font_size: 20
                     Label:
                         # id:
-                        text: "*Muçarela, Brócolis, Bacon, Alho Frito, Azeitonas e Orégano."
+                        text: "Muçarela, Brócolis, Bacon, Alho Frito, Azeitonas e Orégano."
+                        font_size: 18
+                    Label:
+                        # id:
+                        text: ""
+                        font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Preço R$"
+                            font_size: 18
                         Label:
                             id: valor_Brocolis
-                            text: "10.00"
+                            text: "20.00"
+                            font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Quantidade:"
+                            font_size: 18
                         Label:
                             id: quantidade_Brocolis
                             text: "0"
+                            font_size: 18
+                            bold: True     
 
                     GridLayout:
                         cols: 2
@@ -633,38 +812,51 @@
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
+                    height: 300
+                    padding: 10
                     spacing: 0
 
                     Label:
                         # id:
                         text: "Champignon"
+                        font_size: 20
                     Label:
                         # id:
                         text: "Muçarela, Provolone, Champignon e Rodelas de Tomate."
+                        font_size: 18
+                    Label:
+                        # id:
+                        text: ""
+                        font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Preço R$"
+                            font_size: 18
                         Label:
                             id: valor_Champignon
-                            text: "10.00"
+                            text: "20.00"
+                            font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Quantidade:"
+                            font_size: 18
                         Label:
                             id: quantidade_Champignon
                             text: "0"
+                            font_size: 18
+                            bold: True     
 
                     GridLayout:
                         cols: 2
@@ -680,38 +872,51 @@
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
+                    height: 300
+                    padding: 10
                     spacing: 0
 
                     Label:
                         # id:
                         text: "Cinco Queijos"
+                        font_size: 20
                     Label:
                         # id:
-                        text: "Muçarela, Catupiry, provolone, Gorgonzola, Parmesão e Azeitonas pretas."
+                        text: "Muçarela, Catupiry, provolone, Gorgonzola, Parmesão e "
+                        font_size: 18
+                    Label:
+                        # id:
+                        text: "Azeitonas pretas."
+                        font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Preço R$"
+                            font_size: 18
                         Label:
                             id: valor_CincoQueijos
-                            text: "10.00"
+                            text: "20.00"
+                            font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Quantidade:"
+                            font_size: 18
                         Label:
                             id: quantidade_CincoQueijos
                             text: "0"
+                            font_size: 18
+                            bold: True     
 
                     GridLayout:
                         cols: 2
@@ -727,38 +932,51 @@
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
+                    height: 300
+                    padding: 10
                     spacing: 0
 
                     Label:
                         # id:
                         text: "Salaminho"
+                        font_size: 20
                     Label:
                         # id:
                         text: "Muçarela, Salaminho, Rodelas de Tomate e Azeitonas."
+                        font_size: 18
+                    Label:
+                        # id:
+                        text: ""
+                        font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Preço R$"
+                            font_size: 18
                         Label:
                             id: valor_Salaminho
-                            text: "10.00"
+                            text: "20.00"
+                            font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Quantidade:"
+                            font_size: 18
                         Label:
                             id: quantidade_Salaminho
                             text: "0"
+                            font_size: 18
+                            bold: True     
 
                     GridLayout:
                         cols: 2
@@ -774,38 +992,51 @@
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
+                    height: 300
+                    padding: 10
                     spacing: 0
 
                     Label:
                         # id:
                         text: "Vegetariana"
+                        font_size: 20
                     Label:
                         # id:
-                        text: "Muçarela, Rodelas de Tomate, Palmito, Cebola, Pimentão, Azeitonas, Milho Verde e Ervilhas."
+                        text: "Muçarela, Rodelas de Tomate, Palmito, Cebola, Pimentão, "
+                        font_size: 18
+                    Label:
+                        # id:
+                        text: "Azeitonas, Milho Verde e Ervilhas."
+                        font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Preço R$"
+                            font_size: 18
                         Label:
                             id: valor_Vegetariana
-                            text: "10.00"
+                            text: "20.00"
+                            font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Quantidade:"
+                            font_size: 18
                         Label:
                             id: quantidade_Vegetariana
                             text: "0"
+                            font_size: 18
+                            bold: True     
 
                     GridLayout:
                         cols: 2
@@ -818,53 +1049,73 @@
                             text: '-'
                             on_release: root.decrementar_Vegetariana()
 
-                # Titulo da Categoria dessas Pizzas
                 BoxLayout:
+                    canvas:
+                        Color:
+                            rgb: 128/255, 128/255, 128/255
+                        Rectangle:
+                            size: self.size
+                            pos:self.pos
+
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
-                    spacing: 0
+                    height: 50
+                    padding: 10
+                    spacing: 10
 
                     Label:
                         # id:
                         text: "PIZZAS DOCES"
+                        font_size: 25   
 
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
+                    height: 300
+                    padding: 10
                     spacing: 0
 
                     Label:
                         # id:
                         text: "Açaí"
+                        font_size: 20
                     Label:
                         # id:
-                        text: "Açaí, confete, Leite Ninho, Granola, Nutella e Leite Condensado."
+                        text: "Açaí, confete, Leite Ninho, Granola, Nutella e "
+                        font_size: 18
+                    Label:
+                        # id:
+                        text: "Leite Condensado."
+                        font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Preço R$"
+                            font_size: 18
                         Label:
                             id: valor_Acai
                             text: "10.00"
+                            font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Quantidade:"
+                            font_size: 18
                         Label:
                             id: quantidade_Acai
                             text: "0"
+                            font_size: 18
+                            bold: True     
 
                     GridLayout:
                         cols: 2
@@ -880,38 +1131,51 @@
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
+                    height: 300
+                    padding: 10
                     spacing: 0
 
                     Label:
                         # id:
                         text: "Banana"
+                        font_size: 20
                     Label:
                         # id:
                         text: "Muçarela, Banana, Açúcar, Canela e Leite condensado."
+                        font_size: 18
+                    Label:
+                        # id:
+                        text: ""
+                        font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Preço R$"
+                            font_size: 18
                         Label:
                             id: valor_Banana
                             text: "10.00"
+                            font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Quantidade:"
+                            font_size: 18
                         Label:
                             id: quantidade_Banana
                             text: "0"
+                            font_size: 18
+                            bold: True     
 
                     GridLayout:
                         cols: 2
@@ -927,38 +1191,51 @@
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
+                    height: 300
+                    padding: 10
                     spacing: 0
 
                     Label:
                         # id:
                         text: "Brigadeiro"
+                        font_size: 20
                     Label:
                         # id:
                         text: "Muçarela, chocolate ao leite, Granulado e Leite condensado."
+                        font_size: 18
+                    Label:
+                        # id:
+                        text: ""
+                        font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Preço R$"
+                            font_size: 18
                         Label:
                             id: valor_Brigadeiro
                             text: "10.00"
+                            font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Quantidade:"
+                            font_size: 18
                         Label:
                             id: quantidade_Brigadeiro
                             text: "0"
+                            font_size: 18
+                            bold: True     
 
                     GridLayout:
                         cols: 2
@@ -974,38 +1251,51 @@
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
+                    height: 300
+                    padding: 10
                     spacing: 0
 
                     Label:
                         # id:
                         text: "Prestígio"
+                        font_size: 20
                     Label:
                         # id:
                         text: "Chocolate ao leite, Coco ralado."
+                        font_size: 18
+                    Label:
+                        # id:
+                        text: ""
+                        font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Preço R$"
+                            font_size: 18
                         Label:
                             id: valor_Prestigio
                             text: "10.00"
+                            font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Quantidade:"
+                            font_size: 18
                         Label:
                             id: quantidade_Prestigio
                             text: "0"
+                            font_size: 18
+                            bold: True     
 
                     GridLayout:
                         cols: 2
@@ -1021,38 +1311,51 @@
                 BoxLayout:
                     orientation:'vertical'
                     size_hint_y: None
-                    height: 150
-                    padding: 0
+                    height: 300
+                    padding: 10
                     spacing: 0
 
                     Label:
                         # id:
                         text: "Romeu e Julieta"
+                        font_size: 20
                     Label:
                         # id:
                         text: "Muçarela, Goiabada e Queijo."
+                        font_size: 18
+                    Label:
+                        # id:
+                        text: ""
+                        font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Preço R$"
+                            font_size: 18
                         Label:
                             id: valor_RomeuAndJulieta
                             text: "10.00"
+                            font_size: 18
 
                     GridLayout:
                         cols: 2
-                        spacing:0
+                        padding: 0
+                        spacing: 0
 
                         Label:
                             # id:
                             text: "Quantidade:"
+                            font_size: 18
                         Label:
                             id: quantidade_RomeuAndJulieta
                             text: "0"
+                            font_size: 18
+                            bold: True     
 
                     GridLayout:
                         cols: 2
@@ -1066,28 +1369,39 @@
                             on_release: root.decrementar_RomeuAndJulieta()
 
         BoxLayout:
+            canvas:
+                Color:
+                    rgb: 128/255, 128/255, 128/255, 1
+                Rectangle:
+                    size: self.size
+                    pos:self.pos
+
             orientation:'vertical'
             size_hint_y: None
-            height: 150
-            padding: 0
+            height: 100
+            padding: 20
             spacing: 0
 
             GridLayout:
                 cols: 2
                 spacing:0
+                padding: 20
 
                 Label:
                     # id:
                     text: "Total R$"
+                    font_size: 18
                 Label:
                     id: valorTotalDoPedido
                     text: "0.00"
+                    bold: True
+                    font_size: 18
 
         BoxLayout:
             orientation:'vertical'
             size_hint_y: None
-            height: 150
-            padding: 0
+            height: 100
+            padding: 20
             spacing: 0
 
             GridLayout:
@@ -1099,14 +1413,19 @@
                     on_release: app.root.current = 'menu'
                 Button:
                     text: 'Finalizar pedido'
-                    on_release: app.root.current = 'finalizar_pedido'
-                    # on_press: root.manager.transition.direction = 'right'
+                    on_release: root.verificarHorario()                         
 
 <Finalizar_Pedido>:
+    enderecoParaEntregaDoPedido: enderecoParaEntregaDoPedido
+    numeroParaEntregaDoPedido: numeroParaEntregaDoPedido
+    bairroParaEntregaDoPedido: bairroParaEntregaDoPedido
+    telefoneParaContato: telefoneParaContato
+    forma_de_pagamento: forma_de_pagamento
+    
     BoxLayout:
         orientation: 'vertical'
-        padding: 0
-        spacing: 0
+        padding: 20
+        spacing: 20
 
         GridLayout:
             cols: 2
@@ -1117,33 +1436,53 @@
                 text: "Endereço: "
             TextInput:
                 id: enderecoParaEntregaDoPedido
-                font_size: 30
+                font_size: 18
+                multiline:False 
+                write_tab: False 
             Label:
                 # id:
-                text: "Telefone: "
+                text: "Numero: "
+            TextInput:
+                id: numeroParaEntregaDoPedido 
+                font_size: 18
+                multiline:False 
+                write_tab: False 
+            Label:
+                # id:
+                text: "Bairro: "
+            TextInput:
+                id: bairroParaEntregaDoPedido 
+                font_size: 18
+                multiline:False 
+                write_tab: False 
+            Label:
+                # id:
+                text: "Telefone para Contato: "
             TextInput:
                 id: telefoneParaContato
-                font_size: 30
-                input_filter:'int' # Só pode digitar numeros inteiros
+                font_size: 18
+                multiline:False 
+                write_tab: False 
 
         BoxLayout:
             orientation:'vertical'
             size_hint_y: None
             height: 150
-            padding: 0
-            spacing: 0
+            padding: 20
+            spacing: 20
             Spinner:
                 id: forma_de_pagamento
                 text: "Selecione a forma de pagamento"
                 values: ["Cartão de Credito", "Cartão de Debito","Pix"]
-                on_press: root.spinner_Clicado(self.text)
+				on_text: root.on_spinner_select(self.text)
         
         BoxLayout:
             orientation:'vertical'
             size_hint_y: None
             height: 150
-            padding: 0
-            spacing: 0        
+            padding: 20
+            spacing: 20        
+			
             GridLayout:
                 cols: 2
                 spacing:0        
@@ -1156,5 +1495,4 @@
 
         Button:
             text: 'Finalizar Pedido'
-            # on_release: app.root.current = ''
-            on_press: root.atualizarValorDoPedido()
+			on_release: root.validar()
